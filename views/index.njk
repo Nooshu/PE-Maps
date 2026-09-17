@@ -1,0 +1,37 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
+
+{% block pageTitle %}Example maps – GOV.UK{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Example maps</h1>
+      <p class="govuk-body-l">
+        Accessible map examples for GOV.UK services, using GOV.UK Frontend and the Defra Interactive Map.
+      </p>
+
+      <h2 class="govuk-heading-m">Examples</h2>
+      {{ govukTaskList({
+        idPrefix: "map-examples",
+        items: [
+          {
+            title: {
+              text: "Basic map"
+            },
+            hint: {
+              text: "An accessible map of London, United Kingdom"
+            },
+            href: "/basic-map",
+            status: {
+              tag: {
+                text: "Example"
+              }
+            }
+          }
+        ]
+      }) }}
+    </div>
+  </div>
+{% endblock %}

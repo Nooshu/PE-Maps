@@ -1,0 +1,43 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% block pageTitle %}Basic map – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Basic map"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Basic map</h1>
+      <p class="govuk-body">
+        An accessible map of London, United Kingdom.
+      </p>
+      <div id="map"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/map.js"></script>
+{% endblock %}
