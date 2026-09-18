@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "check:deps": "node scripts/check-dependencies.mjs",
-    "dev": "npm run build && concurrently -k \"tsx watch --include views --include src/client src/build.ts\" \"tsx watch src/server.ts\"",
+    "dev": "npm run build && concurrently -k \"tsx watch --include views --include src/client --include src/maps src/build.ts\" \"tsx watch src/server.ts\"",
     "preinstall": "node scripts/check-dependencies.mjs",
     "start": "npm run build && tsx src/server.ts",
     "typecheck": "tsc --noEmit"
@@ -28,6 +28,7 @@
     "@types/nunjucks": "3.2.6",
     "concurrently": "10.0.5",
     "esbuild": "0.28.2",
+    "staticmaps": "1.13.1",
     "tsx": "4.23.13",
     "typescript": "7.0.2"
   }

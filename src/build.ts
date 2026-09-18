@@ -6,6 +6,8 @@ import path from "node:path"
 import * as esbuild from "esbuild"
 import nunjucks from "nunjucks"
 
+import { basicMap } from "./maps/basic-map.js"
+import { renderStaticMap } from "./maps/render-static-map.js"
 import {
   govukFrontendDir,
   govukFrontendRoot,
@@ -125,18 +127,20 @@ export async function build(): Promise<void> {
     recursive: true
   })
 
+  await renderStaticMap(basicMap, path.join(publicDir, "images/basic-map.png"))
+
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true
   })
 
-  const pages = [
+  const pages: Array<{ template: string; output: string; context?: Record<string, unknown> }> = [
     { template: "index.njk", output: "index.html" },
-    { template: "basic-map.njk", output: "basic-map.html" }
+    { template: "basic-map.njk", output: "basic-map.html", context: { map: basicMap } }
   ]
 
   await Promise.all(
     pages.map(async (page) => {
-      const html = nunjucksEnv.render(page.template)
+      const html = nunjucksEnv.render(page.template, page.context ?? {})
       await writeFile(path.join(publicDir, page.output), html)
     })
   )

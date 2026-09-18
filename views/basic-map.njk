@@ -6,6 +6,15 @@
 
 {% block pageStyles %}
   <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <style>
+    .app-map-static {
+      display: block;
+      width: 100%;
+      height: {{ map.height }}px;
+      object-fit: cover;
+      object-position: center;
+    }
+  </style>
 {% endblock %}
 
 {% block mapLoading %}
@@ -33,7 +42,18 @@
       <p class="govuk-body">
         An accessible map of London, United Kingdom.
       </p>
-      <div id="map"></div>
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
     </div>
   </div>
 {% endblock %}
