@@ -1,0 +1,208 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Road network, Birmingham – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Road network"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Proposed 20mph roads in central Birmingham</h1>
+      <p class="govuk-body-l">
+        See which city-centre roads would change speed limit, and which strategic routes would stay at 30mph.
+      </p>
+      <p class="govuk-body">
+        Orange roads are where the limit would change from 30mph to 20mph. Blue roads are the A38 Queensway and would stay at 30mph. The shaded area is the proposed zone.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.roadNetworkScheme.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.roadNetworkScheme.headline }}</p>
+        <p class="govuk-body">{{ map.roadNetworkScheme.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.roadNetworkScheme.status, classes: "govuk-tag--yellow" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Scheme details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Reference" },
+            value: { text: map.roadNetworkScheme.reference }
+          },
+          {
+            key: { text: "Scheme" },
+            value: { text: map.roadNetworkScheme.schemeName }
+          },
+          {
+            key: { text: "Highway authority" },
+            value: { text: map.roadNetworkScheme.authority }
+          },
+          {
+            key: { text: "Changes start" },
+            value: { text: map.roadNetworkScheme.starts }
+          },
+          {
+            key: { text: "Experimental order until" },
+            value: { text: map.roadNetworkScheme.experimentalUntil }
+          },
+          {
+            key: { text: "Decision on making it permanent" },
+            value: { text: map.roadNetworkScheme.decisionDate }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "The new 20mph limit would be enforced from 6 April 2027. The A38 Queensway would stay at 30mph.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(speedTable) }}
+
+      {{ govukTable(unchangedTable) }}
+
+      <div class="app-road-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same roads shown on the map, including where they are, which limits would change, and which strategic routes would stay the same.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. Orange roads are the ones changing. Blue roads are the A38.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.roadNetworkScheme.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set strategicHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.roadNetworkScheme.strategicRoutes %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "road-network-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the roads are" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "Strategic routes that would not change" },
+              content: { html: strategicHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact Birmingham City Council</h2>
+      <p class="govuk-body">
+        Use these details to comment on the experimental order or to ask about signs, dates and enforcement. Quote {{ map.roadNetworkScheme.reference }}.
+      </p>
+
+      {% set trafficOfficer = map.roadNetworkScheme.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ trafficOfficer.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ trafficOfficer.name }}, {{ trafficOfficer.organisation }}</li>
+          <li>Quote {{ map.roadNetworkScheme.reference }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ trafficOfficer.email }}">{{ trafficOfficer.email }}</a></li>
+          <li>Telephone: {{ trafficOfficer.phone }}</li>
+          <li>{{ trafficOfficer.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.roadNetworkScheme.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Comment on the order or report a highways fault",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/road-network-map.js"></script>
+{% endblock %}

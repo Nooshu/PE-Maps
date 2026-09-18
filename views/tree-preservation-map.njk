@@ -1,0 +1,265 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Tree Preservation Order, Falkland – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Tree Preservation Order"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Tree Preservation Order in Falkland, Fife</h1>
+      <p class="govuk-body-l">
+        Protected woodland and individual trees around Falkland Palace Gardens, East Port and High Street.
+      </p>
+      <p class="govuk-body">
+        This map shows the area covered by Fife Council Tree Preservation Order FIFE/TPO/014/1987 and the 5 trees listed on the order. Use the key on the map to see what the green area means.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.treePreservationOrder.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.treePreservationOrder.headline }}</p>
+        <p class="govuk-body">{{ map.treePreservationOrder.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.treePreservationOrder.status, classes: "govuk-tag--green" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Order details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "TPO reference" },
+            value: { text: map.treePreservationOrder.reference }
+          },
+          {
+            key: { text: "Title" },
+            value: { text: map.treePreservationOrder.title }
+          },
+          {
+            key: { text: "Planning authority" },
+            value: { text: map.treePreservationOrder.planningAuthority }
+          },
+          {
+            key: { text: "Location" },
+            value: { text: map.treePreservationOrder.siteAddress }
+          },
+          {
+            key: { text: "What is protected" },
+            value: { text: map.treePreservationOrder.areaDescription }
+          },
+          {
+            key: { text: "Order made" },
+            value: { text: map.treePreservationOrder.made }
+          },
+          {
+            key: { text: "Order confirmed" },
+            value: { text: map.treePreservationOrder.confirmed }
+          },
+          {
+            key: { text: "Last varied" },
+            value: { text: map.treePreservationOrder.lastVaried }
+          },
+          {
+            key: { text: "Conservation area" },
+            value: { text: map.treePreservationOrder.conservationArea }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "It is a criminal offence to cut down, uproot, top, lop or wilfully damage a protected tree without consent.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(treesTable) }}
+
+      <div class="app-tpo-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same woodland and trees shown on the map, including where they stand, what you can and cannot do, and how to report a problem.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <p class="govuk-body">{{ map.treePreservationOrder.areaDescription }}</p>
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.treePreservationOrder.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set treesHtml %}
+          {{ govukSummaryList({
+            rows: treeDetails.rows
+          }) }}
+        {% endset %}
+
+        {% set cannotHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.treePreservationOrder.cannotDo %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set canHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.treePreservationOrder.canDo %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set applyHtml %}
+          <ul class="govuk-list govuk-list--number">
+            {% for item in map.treePreservationOrder.howToApply %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set reportHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.treePreservationOrder.howToReport %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "tpo-map-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the protected area is" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "About each protected tree" },
+              content: { html: treesHtml }
+            },
+            {
+              heading: { text: "What you cannot do" },
+              content: { html: cannotHtml }
+            },
+            {
+              heading: { text: "What you can do" },
+              content: { html: canHtml }
+            },
+            {
+              heading: { text: "How to apply for works" },
+              content: { html: applyHtml }
+            },
+            {
+              heading: { text: "How to report a problem" },
+              content: { html: reportHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact Fife Council</h2>
+      <p class="govuk-body">
+        Use these details to apply for works, ask about a tree on this order, or report unauthorised cutting.
+      </p>
+
+      {% set treeOfficer = map.treePreservationOrder.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ treeOfficer.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ treeOfficer.name }}, {{ treeOfficer.organisation }}</li>
+          <li>Quote {{ map.treePreservationOrder.reference }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ treeOfficer.email }}">{{ treeOfficer.email }}</a></li>
+          <li>Telephone: {{ treeOfficer.phone }}</li>
+          <li>{{ treeOfficer.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.treePreservationOrder.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Report unauthorised works or a dangerous tree",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/tree-preservation-map.js"></script>
+{% endblock %}

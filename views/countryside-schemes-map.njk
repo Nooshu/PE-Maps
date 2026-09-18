@@ -1,0 +1,247 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Countryside schemes, Bourton-on-the-Water – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Countryside schemes"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Land available for countryside schemes in Bourton-on-the-Water</h1>
+      <p class="govuk-body-l">
+        See which parcels at Manor Farm you can select, how much land is eligible, and which geographic rules apply.
+      </p>
+      <p class="govuk-body">
+        Green fields west and north of the village are available. The orange field is already in an agreement. The blue strip is the 6 metre buffer along the River Windrush. The red area east of the village is Salmonsbury Meadows SSSI and is not on this holding.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.countrysideScheme.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.countrysideScheme.headline }}</p>
+        <p class="govuk-body">{{ map.countrysideScheme.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.countrysideScheme.status, classes: "govuk-tag--green" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Holding details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Scheme" },
+            value: { text: map.countrysideScheme.schemeName }
+          },
+          {
+            key: { text: "Holding" },
+            value: { text: map.countrysideScheme.holdingName }
+          },
+          {
+            key: { text: "Single business identifier (SBI)" },
+            value: { text: map.countrysideScheme.sbi }
+          },
+          {
+            key: { text: "County parish holding (CPH)" },
+            value: { text: map.countrysideScheme.cph }
+          },
+          {
+            key: { text: "Location" },
+            value: { text: map.countrysideScheme.location }
+          },
+          {
+            key: { text: "Application year" },
+            value: { text: map.countrysideScheme.agreementYear }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Area breakdown</h2>
+      <p class="govuk-body">
+        These figures describe the same land as the map. You do not need the map to decide which parcels to select.
+      </p>
+      {{ govukSummaryList(areaSummary) }}
+
+      {{ govukWarningText({
+        text: "Do not select Salmonsbury Meadows SSSI, east of the village, or Lansdowne Ground, which is already in Countryside Stewardship until 30 September 2028.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(parcelsTable) }}
+
+      {% call govukInsetText() %}
+        <p class="govuk-body">
+          Keep a 6 metre buffer from the River Windrush. On this holding that is 0.23 hectares of West Park and 0.46 hectares of Station Meadow. You can use that strip for a watercourse action. You cannot crop it.
+        </p>
+      {% endcall %}
+
+      <h2 class="govuk-heading-m">Geographic requirements</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for requirement in map.countrysideScheme.requirements %}
+          <li>{{ requirement }}</li>
+        {% endfor %}
+      </ul>
+
+      <div class="app-countryside-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same parcels, colours and rules shown on the map, including where each field is around Bourton-on-the-Water.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. Green is available. Orange is already in an agreement. Blue is the river buffer. Red is the SSSI.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.countrysideScheme.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set parcelDetailsHtml %}
+          {{ govukSummaryList({
+            rows: parcelDetails.rows
+          }) }}
+        {% endset %}
+
+        {% set selectHtml %}
+          <ul class="govuk-list govuk-list--number">
+            {% for item in map.countrysideScheme.howToSelect %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set ineligibleHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.countrysideScheme.ineligibleNearby %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "countryside-scheme-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the land is" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "About each parcel" },
+              content: { html: parcelDetailsHtml }
+            },
+            {
+              heading: { text: "Which parcels to select" },
+              content: { html: selectHtml }
+            },
+            {
+              heading: { text: "Designated land that is not on this holding" },
+              content: { html: ineligibleHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact the Rural Payments Agency</h2>
+      <p class="govuk-body">
+        Use these details to ask about this application, watercourse buffers or SSSI consent. Quote SBI {{ map.countrysideScheme.sbi }}.
+      </p>
+
+      {% set ruralPayments = map.countrysideScheme.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ ruralPayments.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ ruralPayments.name }}, {{ ruralPayments.organisation }}</li>
+          <li>Quote SBI {{ map.countrysideScheme.sbi }} and CPH {{ map.countrysideScheme.cph }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ ruralPayments.email }}">{{ ruralPayments.email }}</a></li>
+          <li>Telephone: {{ ruralPayments.phone }}</li>
+          <li>{{ ruralPayments.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.countrysideScheme.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "SSSI consent or catchment advice",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/countryside-schemes-map.js"></script>
+{% endblock %}

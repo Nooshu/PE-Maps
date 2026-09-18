@@ -1,0 +1,238 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Title extent, Buckingham Palace – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Title extent"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Registered title extent for Buckingham Palace</h1>
+      <p class="govuk-body-l">
+        See which land is included in example title {{ map.registeredTitle.titleNumber }}.
+      </p>
+      <p class="govuk-body">
+        The red outline on this map is the geographic extent of the registered title: the palace, the east forecourt and the private gardens. Use the key on the map to see what the red area means.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.registeredTitle.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.registeredTitle.headline }}</p>
+        <p class="govuk-body">{{ map.registeredTitle.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.registeredTitle.status, classes: "govuk-tag--green" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Title register</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Title number" },
+            value: { text: map.registeredTitle.titleNumber }
+          },
+          {
+            key: { text: "Property" },
+            value: { text: map.registeredTitle.propertyAddress }
+          },
+          {
+            key: { text: "Tenure" },
+            value: { text: map.registeredTitle.tenure }
+          },
+          {
+            key: { text: "Class of title" },
+            value: { text: map.registeredTitle.classOfTitle }
+          },
+          {
+            key: { text: "Registered proprietor" },
+            value: { text: map.registeredTitle.proprietor }
+          },
+          {
+            key: { text: "Administrative area" },
+            value: { text: map.registeredTitle.administrativeArea }
+          },
+          {
+            key: { text: "Area of the extent" },
+            value: { text: map.registeredTitle.area }
+          },
+          {
+            key: { text: "First registered" },
+            value: { text: map.registeredTitle.firstRegistered }
+          },
+          {
+            key: { text: "Register last updated" },
+            value: { text: map.registeredTitle.lastUpdated }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "This is example data. It is not an official copy of the register or the title plan. Do not use it to buy, sell or charge land.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      <div class="app-title-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same land shown by the red outline, including what is inside the title, what sits next to it, and how to read a title extent.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. HM Land Registry title plans also edge the land in red.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set extentHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.registeredTitle.extentDescription %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set includedHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.registeredTitle.included %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set excludedHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.registeredTitle.excluded %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set surroundingHtml %}
+          {{ govukSummaryList({
+            rows: surroundingSummary.rows
+          }) }}
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "title-extent-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the title land is" },
+              content: { html: extentHtml }
+            },
+            {
+              heading: { text: "Land included in this title" },
+              content: { html: includedHtml }
+            },
+            {
+              heading: { text: "Land not included in this title" },
+              content: { html: excludedHtml }
+            },
+            {
+              heading: { text: "The surrounding area" },
+              content: { html: surroundingHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Get an official copy</h2>
+      <p class="govuk-body">
+        An official copy of the register and title plan is the document you should rely on. Quote title number {{ map.registeredTitle.titleNumber }}.
+      </p>
+
+      {% set registry = map.registeredTitle.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ registry.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ registry.name }}, {{ registry.organisation }}</li>
+          <li>Quote {{ map.registeredTitle.titleNumber }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ registry.email }}">{{ registry.email }}</a></li>
+          <li>Telephone: {{ registry.phone }}</li>
+          <li>{{ registry.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.registeredTitle.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Official copies and local land charges",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/title-extent-map.js"></script>
+{% endblock %}

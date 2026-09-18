@@ -12,10 +12,26 @@ import {
   planningKeyTableParams,
   planningRoadsTableParams,
   planningFacilitiesSummaryParams,
-  planningTimetableTableParams
+  planningTimetableTableParams,
+  tpoKeyTableParams,
+  tpoTreeDetailsSummaryParams,
+  tpoTreesTableParams,
+  titleKeyTableParams,
+  titleSurroundingSummaryParams,
+  roadKeyTableParams,
+  roadSpeedTableParams,
+  roadUnchangedTableParams,
+  countrysideKeyTableParams,
+  countrysideParcelsTableParams,
+  countrysideAreaSummaryParams,
+  countrysideParcelDetailsParams
 } from "./maps/basic-map.js"
+import { countrysideSchemesMap } from "./maps/countryside-schemes-map.js"
 import { floodRiskMap } from "./maps/flood-risk-map.js"
 import { planningMap } from "./maps/planning-map.js"
+import { roadNetworkMap } from "./maps/road-network-map.js"
+import { titleExtentMap } from "./maps/title-extent-map.js"
+import { treePreservationMap } from "./maps/tree-preservation-map.js"
 import { renderStaticMap } from "./maps/render-static-map.js"
 import { routeMap } from "./maps/route-map.js"
 import {
@@ -121,7 +137,11 @@ export async function build(): Promise<void> {
       path.join(projectRoot, "src/client/map.ts"),
       path.join(projectRoot, "src/client/route-map.ts"),
       path.join(projectRoot, "src/client/flood-risk-map.ts"),
-      path.join(projectRoot, "src/client/planning-map.ts")
+      path.join(projectRoot, "src/client/planning-map.ts"),
+      path.join(projectRoot, "src/client/tree-preservation-map.ts"),
+      path.join(projectRoot, "src/client/title-extent-map.ts"),
+      path.join(projectRoot, "src/client/road-network-map.ts"),
+      path.join(projectRoot, "src/client/countryside-schemes-map.ts")
     ],
     bundle: true,
     format: "esm",
@@ -175,6 +195,10 @@ export async function build(): Promise<void> {
   await renderStaticMap(routeMap, path.join(publicDir, "images/route-map.png"))
   await renderStaticMap(floodRiskMap, path.join(publicDir, "images/flood-risk-map.png"))
   await renderStaticMap(planningMap, path.join(publicDir, "images/planning-map.png"))
+  await renderStaticMap(treePreservationMap, path.join(publicDir, "images/tree-preservation-map.png"))
+  await renderStaticMap(titleExtentMap, path.join(publicDir, "images/title-extent-map.png"))
+  await renderStaticMap(roadNetworkMap, path.join(publicDir, "images/road-network-map.png"))
+  await renderStaticMap(countrysideSchemesMap, path.join(publicDir, "images/countryside-schemes-map.png"))
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true
@@ -202,6 +226,46 @@ export async function build(): Promise<void> {
         roadsTable: planningRoadsTableParams(planningMap),
         timetableTable: planningTimetableTableParams(planningMap),
         facilitiesSummary: planningFacilitiesSummaryParams(planningMap)
+      }
+    },
+    {
+      template: "tree-preservation-map.njk",
+      output: "tree-preservation-map.html",
+      context: {
+        map: treePreservationMap,
+        keyTable: tpoKeyTableParams(treePreservationMap),
+        treesTable: tpoTreesTableParams(treePreservationMap),
+        treeDetails: tpoTreeDetailsSummaryParams(treePreservationMap)
+      }
+    },
+    {
+      template: "title-extent-map.njk",
+      output: "title-extent-map.html",
+      context: {
+        map: titleExtentMap,
+        keyTable: titleKeyTableParams(titleExtentMap),
+        surroundingSummary: titleSurroundingSummaryParams(titleExtentMap)
+      }
+    },
+    {
+      template: "road-network-map.njk",
+      output: "road-network-map.html",
+      context: {
+        map: roadNetworkMap,
+        keyTable: roadKeyTableParams(roadNetworkMap),
+        speedTable: roadSpeedTableParams(roadNetworkMap),
+        unchangedTable: roadUnchangedTableParams(roadNetworkMap)
+      }
+    },
+    {
+      template: "countryside-schemes-map.njk",
+      output: "countryside-schemes-map.html",
+      context: {
+        map: countrysideSchemesMap,
+        keyTable: countrysideKeyTableParams(countrysideSchemesMap),
+        parcelsTable: countrysideParcelsTableParams(countrysideSchemesMap),
+        areaSummary: countrysideAreaSummaryParams(countrysideSchemesMap),
+        parcelDetails: countrysideParcelDetailsParams(countrysideSchemesMap)
       }
     }
   ]
