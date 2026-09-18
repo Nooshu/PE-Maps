@@ -14,6 +14,7 @@ const contentTypes: Record<string, string> = {
   ".mjs": "text/javascript; charset=utf-8",
   ".png": "image/png",
   ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
   ".xml": "application/xml; charset=utf-8"
@@ -71,7 +72,8 @@ export function servePrecompressed(publicRoot: string): RequestHandler {
     if (
       request.path.endsWith(".br") ||
       request.path.endsWith(".map") ||
-      request.path === "/_worker.js"
+      request.path === "/_worker.js" ||
+      request.path === "/_headers"
     ) {
       response.status(404).end()
       return

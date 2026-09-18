@@ -1,3 +1,68 @@
+.app-prototype-banner {
+  position: relative;
+  background-color: var(--govuk-focus-colour);
+  color: var(--govuk-focus-text-colour);
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 40px;
+}
+
+.app-prototype-banner:has(.app-prototype-banner__checkbox:checked),
+html[data-prototype-banner="hidden"] .app-prototype-banner {
+  display: none;
+}
+
+.app-prototype-banner__content {
+  display: table;
+  margin: 0;
+}
+
+.app-prototype-banner .govuk-tag {
+  margin-right: 10px;
+}
+
+.app-prototype-banner__text {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.app-prototype-banner__close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.app-prototype-banner__close-icon {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.app-prototype-banner__checkbox:focus {
+  outline: none;
+}
+
+.app-prototype-banner__close:hover {
+  background-color: var(--govuk-focus-text-colour);
+  color: var(--govuk-focus-colour);
+}
+
+.app-prototype-banner__close:focus-within {
+  background-color: var(--govuk-body-background-colour);
+  color: var(--govuk-focus-text-colour);
+  outline: 3px solid var(--govuk-focus-text-colour);
+  outline-offset: 0;
+}
+
 .app-map-static {
   display: block;
   width: 100%;

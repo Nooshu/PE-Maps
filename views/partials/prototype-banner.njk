@@ -1,0 +1,22 @@
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+<div class="app-prototype-banner" id="app-prototype-banner" data-nosnippet role="region" aria-label="Prototype notice">
+  <div class="govuk-width-container">
+    <p class="govuk-body-s app-prototype-banner__content">
+      {{ govukTag({ text: "Prototype" }) }}
+      <span class="app-prototype-banner__text">
+        This is not a live GOV.UK service. It is a working prototype. Do not treat anything on these pages as official information or a government warning.
+      </span>
+    </p>
+  </div>
+  <label class="app-prototype-banner__close" for="app-prototype-banner-hide">
+    <input
+      class="govuk-visually-hidden app-prototype-banner__checkbox"
+      id="app-prototype-banner-hide"
+      type="checkbox"
+      aria-controls="app-prototype-banner"
+    >
+    <span class="app-prototype-banner__close-icon" aria-hidden="true">×</span>
+    <span class="govuk-visually-hidden">Hide this prototype notice</span>
+  </label>
+</div>

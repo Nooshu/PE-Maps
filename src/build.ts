@@ -60,6 +60,7 @@ import {
   publicDir,
   viewsDir
 } from "./paths.js"
+import { cloudflareHeaders, robotsTxt } from "./robots.js"
 
 const brotliCompressAsync = promisify(brotliCompress)
 
@@ -227,6 +228,9 @@ export async function build(): Promise<void> {
   await ensureStaticMaps(staticMapDefinitions, path.join(publicDir, "images"), {
     force: process.env.FORCE_STATIC_MAPS === "1"
   })
+
+  await writeFile(path.join(publicDir, "robots.txt"), robotsTxt)
+  await writeFile(path.join(publicDir, "_headers"), cloudflareHeaders)
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true

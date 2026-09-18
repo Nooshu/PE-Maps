@@ -1,16 +1,22 @@
 {% extends "govuk/template.njk" %}
 
-{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
-
 {% set assetPath = "/assets" %}
 {% set serviceName = serviceName or "Example maps" %}
 {% set serviceUrl = serviceUrl or "/" %}
 
 {% block head %}
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
   <script>
     if (new URLSearchParams(location.search).get('js') === 'off') {
       document.documentElement.setAttribute('data-js', 'off')
       document.write('<meta http-equiv="Content-Security-Policy" content="script-src \'none\'">')
+    }
+    try {
+      if (sessionStorage.getItem('app-prototype-banner-hidden') === '1') {
+        document.documentElement.setAttribute('data-prototype-banner', 'hidden')
+      }
+    } catch {
+      // sessionStorage can throw in private browsing modes
     }
   </script>
   <link rel="stylesheet" href="/stylesheets/govuk-frontend.min.css">
@@ -20,15 +26,10 @@
 
 {% block bodyStart %}
   {% block mapLoading %}{% endblock %}
+  {% include "partials/prototype-banner.njk" %}
 {% endblock %}
 
 {% block beforeContent %}
-  {{ govukPhaseBanner({
-    tag: {
-      text: "Beta"
-    },
-    html: 'This is a new service – your feedback will help us to improve it.'
-  }) }}
   {% block pageBeforeContent %}{% endblock %}
 {% endblock %}
 
@@ -37,6 +38,21 @@
   <script type="module">
     import { initAll } from '/javascripts/govuk-frontend.min.js'
     initAll()
+  </script>
+  <script type="module">
+    const checkbox = document.querySelector('.app-prototype-banner__checkbox')
+
+    checkbox?.addEventListener('change', () => {
+      if (!(checkbox instanceof HTMLInputElement) || !checkbox.checked) {
+        return
+      }
+
+      try {
+        sessionStorage.setItem('app-prototype-banner-hidden', '1')
+      } catch {
+        // sessionStorage can throw in private browsing modes
+      }
+    })
   </script>
   {% block pageScripts %}{% endblock %}
 {% endblock %}
