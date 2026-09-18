@@ -1,7 +1,9 @@
-import { access } from "node:fs/promises"
+import { access, readFile } from "node:fs/promises"
 import path from "node:path"
 
 import type { RequestHandler } from "express"
+
+import { htmlWithoutJavaScript, isJavaScriptOffQuery } from "./html-without-javascript.js"
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -81,6 +83,14 @@ export function servePrecompressed(publicRoot: string): RequestHandler {
 
     if (!filePath) {
       response.status(404).end()
+      return
+    }
+
+    if (path.extname(filePath) === ".html" && isJavaScriptOffQuery(request.query)) {
+      const html = htmlWithoutJavaScript(await readFile(filePath, "utf8"))
+
+      response.setHeader("Content-Type", contentTypeFor(filePath))
+      response.send(html)
       return
     }
 
