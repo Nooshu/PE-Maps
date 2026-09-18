@@ -1,3 +1,7 @@
+.govuk-footer__crown {
+  display: none;
+}
+
 .app-prototype-banner {
   position: relative;
   background-color: var(--govuk-focus-colour);
