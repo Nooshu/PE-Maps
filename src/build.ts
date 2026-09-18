@@ -46,7 +46,8 @@ import { roadNetworkMap } from "./maps/road-network-map.js"
 import { titleExtentMap } from "./maps/title-extent-map.js"
 import { transportStatisticsMap } from "./maps/transport-statistics-map.js"
 import { treePreservationMap } from "./maps/tree-preservation-map.js"
-import { renderStaticMap } from "./maps/render-static-map.js"
+import { ensureStaticMaps } from "./maps/render-static-map.js"
+import { staticMapDefinitions } from "./maps/static-map-definitions.js"
 import { routeMap } from "./maps/route-map.js"
 import {
   govukFrontendDir,
@@ -223,18 +224,9 @@ export async function build(): Promise<void> {
     recursive: true
   })
 
-  await renderStaticMap(basicMap, path.join(publicDir, "images/basic-map.png"))
-  await renderStaticMap(routeMap, path.join(publicDir, "images/route-map.png"))
-  await renderStaticMap(floodRiskMap, path.join(publicDir, "images/flood-risk-map.png"))
-  await renderStaticMap(planningMap, path.join(publicDir, "images/planning-map.png"))
-  await renderStaticMap(treePreservationMap, path.join(publicDir, "images/tree-preservation-map.png"))
-  await renderStaticMap(titleExtentMap, path.join(publicDir, "images/title-extent-map.png"))
-  await renderStaticMap(roadNetworkMap, path.join(publicDir, "images/road-network-map.png"))
-  await renderStaticMap(countrysideSchemesMap, path.join(publicDir, "images/countryside-schemes-map.png"))
-  await renderStaticMap(localAuthorityMap, path.join(publicDir, "images/local-authority-map.png"))
-  await renderStaticMap(rightsAndInterestsMap, path.join(publicDir, "images/rights-and-interests-map.png"))
-  await renderStaticMap(planningApplicationsMap, path.join(publicDir, "images/planning-applications-map.png"))
-  await renderStaticMap(transportStatisticsMap, path.join(publicDir, "images/transport-statistics-map.png"))
+  await ensureStaticMaps(staticMapDefinitions, path.join(publicDir, "images"), {
+    force: process.env.FORCE_STATIC_MAPS === "1"
+  })
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true

@@ -25,6 +25,7 @@ npm install          # exact pins; preinstall checks lockfile SHAs
 npm start            # build + serve at http://localhost:3000
 npm run dev          # rebuild on view/client changes
 npm run build        # render pages, copy assets, Brotli-compress
+npm run maps:static  # regenerate no-JS map PNGs from OpenStreetMap tiles
 npm run typecheck
 npm run check:deps
 ```
@@ -38,6 +39,7 @@ Do not use version ranges (`^`, `~`) in `package.json`. `.npmrc` sets `save-exac
 | `views/` | Nunjucks pages. `index.njk` is the homepage; add examples as sibling templates |
 | `views/layouts/base.njk` | GOV.UK page template, phase banner, GOV.UK CSS/JS |
 | `assets/stylesheets/govuk-override.css` | Custom CSS that overrides GOV.UK Frontend and page styles via the cascade |
+| `assets/images/static-maps/` | Cached no-JS map PNGs. `npm run build` copies these; it does not fetch OpenStreetMap tiles unless a map is new or has changed |
 | `src/build.ts` | Bundles client JS, copies assets, renders HTML, writes `.br` files |
 | `src/server.ts` | Serves `public/` with Brotli when `Accept-Encoding: br` |
 | `src/client/` | Browser TypeScript (ESM, bundled by esbuild) |
@@ -46,9 +48,10 @@ Do not use version ranges (`^`, `~`) in `package.json`. `.npmrc` sets `save-exac
 To add an example map:
 
 1. Add `views/<name>.njk` extending `layouts/base.njk`.
-2. Register it in the `pages` list in `src/build.ts`.
+2. Register it in the `pages` list in `src/build.ts` and in `src/maps/static-map-definitions.ts`.
 3. Link it from the homepage task list in `views/index.njk`.
 4. Load map CSS/JS only on that page (`pageStyles`, `mapLoading`, `pageScripts`). Do not put `im-is-loading` on pages without a map.
+5. After the first build (or `npm run maps:static`), commit the PNG and `.json` hash in `assets/images/static-maps/` so later builds do not fetch OpenStreetMap tiles.
 
 Clean URLs: `/basic-map` serves `public/basic-map.html`.
 

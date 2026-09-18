@@ -5,6 +5,7 @@ export const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.u
 export const publicDir = path.join(projectRoot, "public")
 export const viewsDir = path.join(projectRoot, "views")
 export const govukOverrideCss = path.join(projectRoot, "assets/stylesheets/govuk-override.css")
+export const staticMapsDir = path.join(projectRoot, "assets/images/static-maps")
 export const govukFrontendDir = path.join(projectRoot, "node_modules/govuk-frontend/dist")
 export const govukFrontendRoot = path.join(govukFrontendDir, "govuk")
 export const interactiveMapCss = path.join(
