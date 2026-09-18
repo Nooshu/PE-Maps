@@ -1,0 +1,205 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Local authority boundaries, Filton – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Local authority boundaries"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Which local authority covers 400 Filton Avenue</h1>
+      <p class="govuk-body-l">
+        See whether this property is in South Gloucestershire or Bristol, and which council provides local services.
+      </p>
+      <p class="govuk-body">
+        The blue area is South Gloucestershire. The orange area is Bristol. The black line is the boundary. The pin is 400 Filton Avenue.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.localAuthorityLookup.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.localAuthorityLookup.headline }}</p>
+        <p class="govuk-body">{{ map.localAuthorityLookup.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        {% include "partials/map-fallback.njk" %}
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.localAuthorityLookup.status, classes: "govuk-tag--blue" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Property details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Local authority" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Address" },
+            value: { text: map.localAuthorityLookup.propertyAddress }
+          },
+          {
+            key: { text: "Postcode" },
+            value: { text: map.localAuthorityLookup.postcode }
+          },
+          {
+            key: { text: "Unique property reference number (UPRN)" },
+            value: { text: map.localAuthorityLookup.uprn }
+          },
+          {
+            key: { text: "Type of authority" },
+            value: { text: map.localAuthorityLookup.authorityType }
+          },
+          {
+            key: { text: "Responsible authority" },
+            value: { text: map.localAuthorityLookup.responsibleAuthority }
+          },
+          {
+            key: { text: "Neighbouring authority" },
+            value: { text: map.localAuthorityLookup.neighbouringAuthority }
+          },
+          {
+            key: { text: "Distance to the boundary" },
+            value: { text: map.localAuthorityLookup.distanceToBoundary }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "Bins, planning and most local services for this property are provided by South Gloucestershire Council, not Bristol City Council.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      <h2 class="govuk-heading-m">Who provides each service</h2>
+      <p class="govuk-body">
+        You do not need the map to know which council to contact. These services are all provided by {{ map.localAuthorityLookup.responsibleAuthority }}.
+      </p>
+      {{ govukSummaryList(servicesSummary) }}
+
+      <div class="app-local-authority-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same boundary and authorities shown on the map, including where Filton Avenue crosses from South Gloucestershire into Bristol.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. Blue is South Gloucestershire. Orange is Bristol. The black line is the boundary.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.localAuthorityLookup.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set changesHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.localAuthorityLookup.whatChanges %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "local-authority-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the boundary is" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "What changes if you cross the boundary" },
+              content: { html: changesHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact South Gloucestershire Council</h2>
+      <p class="govuk-body">
+        Use these details to ask which services cover this property. Quote {{ map.localAuthorityLookup.propertyAddress }}.
+      </p>
+
+      {% set customerService = map.localAuthorityLookup.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ customerService.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ customerService.name }}, {{ customerService.organisation }}</li>
+          <li>Quote {{ map.localAuthorityLookup.postcode }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ customerService.email }}">{{ customerService.email }}</a></li>
+          <li>Telephone: {{ customerService.phone }}</li>
+          <li>{{ customerService.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.localAuthorityLookup.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Planning, or if the property is in Bristol",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/local-authority-map.js"></script>
+{% endblock %}

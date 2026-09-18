@@ -224,6 +224,114 @@ export type CountrysideScheme = {
   contacts: PlanningContact[]
 }
 
+export type LocalAuthorityService = {
+  name: string
+  details: string
+}
+
+export type LocalAuthorityLookup = {
+  bannerTitle: string
+  headline: string
+  summary: string
+  status: string
+  propertyAddress: string
+  uprn: string
+  postcode: string
+  responsibleAuthority: string
+  authorityType: string
+  neighbouringAuthority: string
+  distanceToBoundary: string
+  key: PlanningKeyItem[]
+  locations: string[]
+  services: LocalAuthorityService[]
+  whatChanges: string[]
+  contacts: PlanningContact[]
+}
+
+export type TitleInterest = {
+  name: string
+  type: string
+  where: string
+  beneficiary: string
+  details: string
+}
+
+export type RightsAndInterests = {
+  bannerTitle: string
+  headline: string
+  summary: string
+  status: string
+  titleNumber: string
+  propertyAddress: string
+  tenure: string
+  classOfTitle: string
+  proprietor: string
+  firstRegistered: string
+  lastUpdated: string
+  administrativeArea: string
+  area: string
+  key: PlanningKeyItem[]
+  locations: string[]
+  extentDescription: string[]
+  interests: TitleInterest[]
+  included: string[]
+  excluded: string[]
+  contacts: PlanningContact[]
+}
+
+export type AreaPlanningApplication = {
+  id: string
+  reference: string
+  address: string
+  proposal: string
+  status: string
+  received: string
+  decided: string
+  applicationType: string
+}
+
+export type PlanningApplicationsSearch = {
+  bannerTitle: string
+  headline: string
+  summary: string
+  status: string
+  planningAuthority: string
+  areaName: string
+  dateFrom: string
+  dateTo: string
+  applicationCount: string
+  key: PlanningKeyItem[]
+  locations: string[]
+  applications: AreaPlanningApplication[]
+  contacts: PlanningContact[]
+}
+
+export type TransportAuthorityStatistic = {
+  id: string
+  name: string
+  value: number
+  valueLabel: string
+  band: string
+  comparedWithAverage: string
+}
+
+export type TransportStatistics = {
+  bannerTitle: string
+  headline: string
+  summary: string
+  status: string
+  statisticName: string
+  period: string
+  geography: string
+  unit: string
+  average: string
+  key: PlanningKeyItem[]
+  locations: string[]
+  authorities: TransportAuthorityStatistic[]
+  aboutTheData: string[]
+  contacts: PlanningContact[]
+}
+
 export type MapDefinition = {
   containerId: string
   mapLabel: string
@@ -248,6 +356,10 @@ export type MapDefinition = {
   registeredTitle?: RegisteredTitle
   roadNetworkScheme?: RoadNetworkScheme
   countrysideScheme?: CountrysideScheme
+  localAuthorityLookup?: LocalAuthorityLookup
+  rightsAndInterests?: RightsAndInterests
+  planningApplicationsSearch?: PlanningApplicationsSearch
+  transportStatistics?: TransportStatistics
   staticImageSrc: string
   staticImageAttribution: string
 }
@@ -677,6 +789,200 @@ export function directionsTableParams(map: MapDefinition) {
       { text: String(step.number) },
       { text: step.instruction },
       { text: step.distance, format: "numeric" }
+    ])
+  }
+}
+
+export function localAuthorityKeyTableParams(map: MapDefinition) {
+  const localAuthorityLookup = map.localAuthorityLookup
+
+  if (!localAuthorityLookup) {
+    return undefined
+  }
+
+  return {
+    caption: "Map key",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "On the map" }, { text: "What it shows" }],
+    rows: localAuthorityLookup.key.map((item) => [{ text: item.label }, { text: item.description }])
+  }
+}
+
+export function localAuthorityServicesSummaryParams(map: MapDefinition) {
+  const localAuthorityLookup = map.localAuthorityLookup
+
+  if (!localAuthorityLookup) {
+    return undefined
+  }
+
+  return {
+    rows: localAuthorityLookup.services.map((service) => ({
+      key: { text: service.name },
+      value: { text: service.details }
+    }))
+  }
+}
+
+export function rightsKeyTableParams(map: MapDefinition) {
+  const rightsAndInterests = map.rightsAndInterests
+
+  if (!rightsAndInterests) {
+    return undefined
+  }
+
+  return {
+    caption: "Map key",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "On the map" }, { text: "What it shows" }],
+    rows: rightsAndInterests.key.map((item) => [{ text: item.label }, { text: item.description }])
+  }
+}
+
+export function rightsInterestsTableParams(map: MapDefinition) {
+  const rightsAndInterests = map.rightsAndInterests
+
+  if (!rightsAndInterests) {
+    return undefined
+  }
+
+  return {
+    caption: "Rights and interests that affect this title",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [
+      { text: "Interest" },
+      { text: "Type" },
+      { text: "Where it runs" },
+      { text: "Who benefits" }
+    ],
+    rows: rightsAndInterests.interests.map((interest) => [
+      { text: interest.name },
+      { text: interest.type },
+      { text: interest.where },
+      { text: interest.beneficiary }
+    ])
+  }
+}
+
+export function rightsInterestDetailsSummaryParams(map: MapDefinition) {
+  const rightsAndInterests = map.rightsAndInterests
+
+  if (!rightsAndInterests) {
+    return undefined
+  }
+
+  return {
+    rows: rightsAndInterests.interests.map((interest) => ({
+      key: { text: interest.name },
+      value: { text: `${interest.type}. ${interest.where}. ${interest.details}` }
+    }))
+  }
+}
+
+export function planningApplicationsKeyTableParams(map: MapDefinition) {
+  const planningApplicationsSearch = map.planningApplicationsSearch
+
+  if (!planningApplicationsSearch) {
+    return undefined
+  }
+
+  return {
+    caption: "Map key",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "On the map" }, { text: "What it shows" }],
+    rows: planningApplicationsSearch.key.map((item) => [
+      { text: item.label },
+      { text: item.description }
+    ])
+  }
+}
+
+export function planningApplicationsTableParams(map: MapDefinition) {
+  const planningApplicationsSearch = map.planningApplicationsSearch
+
+  if (!planningApplicationsSearch) {
+    return undefined
+  }
+
+  return {
+    caption: "Planning applications in this area",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [
+      { text: "Reference" },
+      { text: "Address" },
+      { text: "Proposal" },
+      { text: "Status" },
+      { text: "Received" }
+    ],
+    rows: planningApplicationsSearch.applications.map((application) => [
+      { text: application.reference },
+      { text: application.address },
+      { text: application.proposal },
+      { text: application.status },
+      { text: application.received }
+    ])
+  }
+}
+
+export function planningApplicationsDetailsSummaryParams(map: MapDefinition) {
+  const planningApplicationsSearch = map.planningApplicationsSearch
+
+  if (!planningApplicationsSearch) {
+    return undefined
+  }
+
+  return {
+    rows: planningApplicationsSearch.applications.map((application) => ({
+      key: { text: application.reference },
+      value: {
+        text: `${application.address}. ${application.applicationType}: ${application.proposal}. ${application.status}. Received ${application.received}. ${application.decided}`
+      }
+    }))
+  }
+}
+
+export function transportStatisticsKeyTableParams(map: MapDefinition) {
+  const transportStatistics = map.transportStatistics
+
+  if (!transportStatistics) {
+    return undefined
+  }
+
+  return {
+    caption: "Map key",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "On the map" }, { text: "What it shows" }],
+    rows: transportStatistics.key.map((item) => [{ text: item.label }, { text: item.description }])
+  }
+}
+
+export function transportStatisticsTableParams(map: MapDefinition) {
+  const transportStatistics = map.transportStatistics
+
+  if (!transportStatistics) {
+    return undefined
+  }
+
+  return {
+    caption: "Bus journeys per person, by local authority",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [
+      { text: "Local authority" },
+      { text: "Journeys per person", format: "numeric" },
+      { text: "Band" },
+      { text: "Compared with the West Midlands average" }
+    ],
+    rows: transportStatistics.authorities.map((authority) => [
+      { text: authority.name },
+      { text: authority.valueLabel, format: "numeric" },
+      { text: authority.band },
+      { text: authority.comparedWithAverage }
     ])
   }
 }

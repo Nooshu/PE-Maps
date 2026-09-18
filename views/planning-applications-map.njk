@@ -1,0 +1,186 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Planning applications, York – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Planning applications"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Planning applications in York</h1>
+      <p class="govuk-body-l">
+        See current and historic planning applications from Clifton to Fulford, including homes, listed buildings and major sites around the station.
+      </p>
+      <p class="govuk-body">
+        Each pin is an application. The shaded area is the search. Use the table for the reference, address, proposal and status.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.planningApplicationsSearch.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.planningApplicationsSearch.headline }}</p>
+        <p class="govuk-body">{{ map.planningApplicationsSearch.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        {% include "partials/map-fallback.njk" %}
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.planningApplicationsSearch.status, classes: "govuk-tag--blue" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Search details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Applications shown" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Planning authority" },
+            value: { text: map.planningApplicationsSearch.planningAuthority }
+          },
+          {
+            key: { text: "Area" },
+            value: { text: map.planningApplicationsSearch.areaName }
+          },
+          {
+            key: { text: "From" },
+            value: { text: map.planningApplicationsSearch.dateFrom }
+          },
+          {
+            key: { text: "To" },
+            value: { text: map.planningApplicationsSearch.dateTo }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "These are example applications. They are not live City of York Council records.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(applicationsTable) }}
+
+      <div class="app-planning-applications-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same applications shown on the map, including where each site is in York.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. The shaded area is the search. Each pin is listed in the table with its status.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.planningApplicationsSearch.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set applicationDetailsHtml %}
+          {{ govukSummaryList({
+            rows: applicationDetails.rows
+          }) }}
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "planning-applications-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the applications are" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "About each application" },
+              content: { html: applicationDetailsHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact City of York Council</h2>
+      <p class="govuk-body">
+        Use these details to comment on an application or to ask about a decision. Quote the application reference from the table.
+      </p>
+
+      {% set planningOfficer = map.planningApplicationsSearch.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ planningOfficer.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ planningOfficer.name }}, {{ planningOfficer.organisation }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ planningOfficer.email }}">{{ planningOfficer.email }}</a></li>
+          <li>Telephone: {{ planningOfficer.phone }}</li>
+          <li>{{ planningOfficer.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.planningApplicationsSearch.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Enforcement or listed buildings",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/planning-applications-map.js"></script>
+{% endblock %}

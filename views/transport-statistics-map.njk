@@ -1,0 +1,199 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Transport statistics, West Midlands – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Transport statistics"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Bus journeys per person in the West Midlands</h1>
+      <p class="govuk-body-l">
+        Compare bus use across the 7 metropolitan boroughs. Darker blue means more journeys per person.
+      </p>
+      <p class="govuk-body">
+        Birmingham is the darkest area. Solihull is the lightest. Coventry is the separate area to the east. Use the table for the figure in each borough.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.transportStatistics.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.transportStatistics.headline }}</p>
+        <p class="govuk-body">{{ map.transportStatistics.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        {% include "partials/map-fallback.njk" %}
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.transportStatistics.status, classes: "govuk-tag--grey" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">About this statistic</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Statistic" },
+            value: { text: map.transportStatistics.statisticName }
+          },
+          {
+            key: { text: "Period" },
+            value: { text: map.transportStatistics.period }
+          },
+          {
+            key: { text: "Geography" },
+            value: { text: map.transportStatistics.geography }
+          },
+          {
+            key: { text: "Unit" },
+            value: { text: map.transportStatistics.unit }
+          },
+          {
+            key: { text: "West Midlands average" },
+            value: { text: map.transportStatistics.average }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "These are example figures. They are not official Department for Transport statistics.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(statisticsTable) }}
+
+      {% call govukInsetText() %}
+        <p class="govuk-body">
+          Colour on the map shows a band, not the exact figure. Birmingham has 68 journeys per person. Solihull has 22. The West Midlands average on this page is {{ map.transportStatistics.average }}.
+        </p>
+      {% endcall %}
+
+      <div class="app-transport-statistics-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same boroughs and colours shown on the map. The table above has the figure for each local authority.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. Darker blue means more bus journeys per person.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.transportStatistics.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set aboutHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.transportStatistics.aboutTheData %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "transport-statistics-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the boroughs are" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "About the data" },
+              content: { html: aboutHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact the Department for Transport</h2>
+      <p class="govuk-body">
+        Use these details to ask about bus passenger journey statistics. Quote {{ map.transportStatistics.statisticName }}.
+      </p>
+
+      {% set busStatistics = map.transportStatistics.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ busStatistics.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ busStatistics.name }}, {{ busStatistics.organisation }}</li>
+          <li>Quote {{ map.transportStatistics.period }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ busStatistics.email }}">{{ busStatistics.email }}</a></li>
+          <li>Telephone: {{ busStatistics.phone }}</li>
+          <li>{{ busStatistics.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.transportStatistics.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "West Midlands bus data or how the figures are collected",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/transport-statistics-map.js"></script>
+{% endblock %}

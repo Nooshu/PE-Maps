@@ -1,0 +1,237 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Rights and interests, Castle Combe – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Rights and interests"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Rights and interests at Weavers Cottage, Castle Combe</h1>
+      <p class="govuk-body-l">
+        See the land in this title, the private right of way to the paddock, the drainage easement, and the public footpath beside The Street.
+      </p>
+      <p class="govuk-body">
+        The red outline is the registered title. The orange line is a private right of way. The blue line is a drainage easement. The green line is a public footpath, not land in this title.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.rightsAndInterests.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.rightsAndInterests.headline }}</p>
+        <p class="govuk-body">{{ map.rightsAndInterests.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        {% include "partials/map-fallback.njk" %}
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.rightsAndInterests.status, classes: "govuk-tag--green" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Title register</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Title number" },
+            value: { text: map.rightsAndInterests.titleNumber }
+          },
+          {
+            key: { text: "Property" },
+            value: { text: map.rightsAndInterests.propertyAddress }
+          },
+          {
+            key: { text: "Tenure" },
+            value: { text: map.rightsAndInterests.tenure }
+          },
+          {
+            key: { text: "Class of title" },
+            value: { text: map.rightsAndInterests.classOfTitle }
+          },
+          {
+            key: { text: "Registered proprietor" },
+            value: { text: map.rightsAndInterests.proprietor }
+          },
+          {
+            key: { text: "Administrative area" },
+            value: { text: map.rightsAndInterests.administrativeArea }
+          },
+          {
+            key: { text: "Area of the extent" },
+            value: { text: map.rightsAndInterests.area }
+          },
+          {
+            key: { text: "First registered" },
+            value: { text: map.rightsAndInterests.firstRegistered }
+          },
+          {
+            key: { text: "Register last updated" },
+            value: { text: map.rightsAndInterests.lastUpdated }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "This is example data. It is not an official copy of the register or the title plan. Do not use it to buy, sell or charge land.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(interestsTable) }}
+
+      {% call govukInsetText() %}
+        <p class="govuk-body">
+          The public footpath runs beside this title, on the far side of The Street. It is a public right of way, not a private right of title {{ map.rightsAndInterests.titleNumber }}.
+        </p>
+      {% endcall %}
+
+      <div class="app-rights-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same land and interests shown on the map, including where each right runs around Weavers Cottage.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map. Red is the title. Orange is the private right of way. Blue is the drain. Green is the public footpath.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set extentHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.rightsAndInterests.extentDescription %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set interestDetailsHtml %}
+          {{ govukSummaryList({
+            rows: interestDetails.rows
+          }) }}
+        {% endset %}
+
+        {% set includedHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.rightsAndInterests.included %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set excludedHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.rightsAndInterests.excluded %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "rights-and-interests-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the title land is" },
+              content: { html: extentHtml }
+            },
+            {
+              heading: { text: "About each right or interest" },
+              content: { html: interestDetailsHtml }
+            },
+            {
+              heading: { text: "Land and rights included in this title" },
+              content: { html: includedHtml }
+            },
+            {
+              heading: { text: "Land not included in this title" },
+              content: { html: excludedHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Get an official copy</h2>
+      <p class="govuk-body">
+        An official copy of the register and title plan is the document you should rely on. Quote title number {{ map.rightsAndInterests.titleNumber }}.
+      </p>
+
+      {% set registry = map.rightsAndInterests.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ registry.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ registry.name }}, {{ registry.organisation }}</li>
+          <li>Quote {{ map.rightsAndInterests.titleNumber }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ registry.email }}">{{ registry.email }}</a></li>
+          <li>Telephone: {{ registry.phone }}</li>
+          <li>{{ registry.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.rightsAndInterests.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Official copies and public footpaths",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/rights-and-interests-map.js"></script>
+{% endblock %}

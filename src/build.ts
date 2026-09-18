@@ -24,13 +24,27 @@ import {
   countrysideKeyTableParams,
   countrysideParcelsTableParams,
   countrysideAreaSummaryParams,
-  countrysideParcelDetailsParams
+  countrysideParcelDetailsParams,
+  localAuthorityKeyTableParams,
+  localAuthorityServicesSummaryParams,
+  rightsKeyTableParams,
+  rightsInterestsTableParams,
+  rightsInterestDetailsSummaryParams,
+  planningApplicationsKeyTableParams,
+  planningApplicationsTableParams,
+  planningApplicationsDetailsSummaryParams,
+  transportStatisticsKeyTableParams,
+  transportStatisticsTableParams
 } from "./maps/basic-map.js"
 import { countrysideSchemesMap } from "./maps/countryside-schemes-map.js"
 import { floodRiskMap } from "./maps/flood-risk-map.js"
+import { localAuthorityMap } from "./maps/local-authority-map.js"
 import { planningMap } from "./maps/planning-map.js"
+import { planningApplicationsMap } from "./maps/planning-applications-map.js"
+import { rightsAndInterestsMap } from "./maps/rights-and-interests-map.js"
 import { roadNetworkMap } from "./maps/road-network-map.js"
 import { titleExtentMap } from "./maps/title-extent-map.js"
+import { transportStatisticsMap } from "./maps/transport-statistics-map.js"
 import { treePreservationMap } from "./maps/tree-preservation-map.js"
 import { renderStaticMap } from "./maps/render-static-map.js"
 import { routeMap } from "./maps/route-map.js"
@@ -147,7 +161,11 @@ export async function build(): Promise<void> {
       path.join(projectRoot, "src/client/tree-preservation-map.ts"),
       path.join(projectRoot, "src/client/title-extent-map.ts"),
       path.join(projectRoot, "src/client/road-network-map.ts"),
-      path.join(projectRoot, "src/client/countryside-schemes-map.ts")
+      path.join(projectRoot, "src/client/countryside-schemes-map.ts"),
+      path.join(projectRoot, "src/client/local-authority-map.ts"),
+      path.join(projectRoot, "src/client/rights-and-interests-map.ts"),
+      path.join(projectRoot, "src/client/planning-applications-map.ts"),
+      path.join(projectRoot, "src/client/transport-statistics-map.ts")
     ],
     bundle: true,
     format: "esm",
@@ -213,6 +231,10 @@ export async function build(): Promise<void> {
   await renderStaticMap(titleExtentMap, path.join(publicDir, "images/title-extent-map.png"))
   await renderStaticMap(roadNetworkMap, path.join(publicDir, "images/road-network-map.png"))
   await renderStaticMap(countrysideSchemesMap, path.join(publicDir, "images/countryside-schemes-map.png"))
+  await renderStaticMap(localAuthorityMap, path.join(publicDir, "images/local-authority-map.png"))
+  await renderStaticMap(rightsAndInterestsMap, path.join(publicDir, "images/rights-and-interests-map.png"))
+  await renderStaticMap(planningApplicationsMap, path.join(publicDir, "images/planning-applications-map.png"))
+  await renderStaticMap(transportStatisticsMap, path.join(publicDir, "images/transport-statistics-map.png"))
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true
@@ -280,6 +302,44 @@ export async function build(): Promise<void> {
         parcelsTable: countrysideParcelsTableParams(countrysideSchemesMap),
         areaSummary: countrysideAreaSummaryParams(countrysideSchemesMap),
         parcelDetails: countrysideParcelDetailsParams(countrysideSchemesMap)
+      }
+    },
+    {
+      template: "local-authority-map.njk",
+      output: "local-authority-map.html",
+      context: {
+        map: localAuthorityMap,
+        keyTable: localAuthorityKeyTableParams(localAuthorityMap),
+        servicesSummary: localAuthorityServicesSummaryParams(localAuthorityMap)
+      }
+    },
+    {
+      template: "rights-and-interests-map.njk",
+      output: "rights-and-interests-map.html",
+      context: {
+        map: rightsAndInterestsMap,
+        keyTable: rightsKeyTableParams(rightsAndInterestsMap),
+        interestsTable: rightsInterestsTableParams(rightsAndInterestsMap),
+        interestDetails: rightsInterestDetailsSummaryParams(rightsAndInterestsMap)
+      }
+    },
+    {
+      template: "planning-applications-map.njk",
+      output: "planning-applications-map.html",
+      context: {
+        map: planningApplicationsMap,
+        keyTable: planningApplicationsKeyTableParams(planningApplicationsMap),
+        applicationsTable: planningApplicationsTableParams(planningApplicationsMap),
+        applicationDetails: planningApplicationsDetailsSummaryParams(planningApplicationsMap)
+      }
+    },
+    {
+      template: "transport-statistics-map.njk",
+      output: "transport-statistics-map.html",
+      context: {
+        map: transportStatisticsMap,
+        keyTable: transportStatisticsKeyTableParams(transportStatisticsMap),
+        statisticsTable: transportStatisticsTableParams(transportStatisticsMap)
       }
     }
   ]
