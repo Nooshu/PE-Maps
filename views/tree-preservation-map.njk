@@ -55,16 +55,7 @@
       {% endcall %}
 
       <div id="{{ map.containerId }}">
-        <noscript>
-          <img
-            class="app-map-static"
-            src="{{ map.staticImageSrc }}"
-            width="{{ map.width }}"
-            height="{{ map.height }}"
-            alt="{{ map.mapLabel }}"
-          >
-          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
-        </noscript>
+        {% include "partials/map-fallback.njk" %}
       </div>
 
       {% set statusHtml %}

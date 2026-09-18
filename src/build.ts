@@ -105,8 +105,14 @@ async function copyStylesheetOrScript(from: string, to: string): Promise<void> {
 
 async function compressFile(filePath: string): Promise<void> {
   const extension = path.extname(filePath)
+  const basename = path.basename(filePath)
 
-  if (extension === ".br" || extension === ".map" || !compressibleExtensions.has(extension)) {
+  if (
+    extension === ".br" ||
+    extension === ".map" ||
+    basename === "_worker.js" ||
+    !compressibleExtensions.has(extension)
+  ) {
     return
   }
 
@@ -161,6 +167,14 @@ export async function build(): Promise<void> {
         }
       }
     ]
+  })
+
+  await esbuild.build({
+    entryPoints: [path.join(projectRoot, "src/pages-worker.ts")],
+    bundle: true,
+    format: "esm",
+    sourcemap: false,
+    outfile: path.join(publicDir, "_worker.js")
   })
 
   await copyStylesheetOrScript(

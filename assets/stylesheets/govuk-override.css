@@ -6,7 +6,16 @@
   object-position: center;
 }
 
-noscript {
+.js-enabled .app-map-static,
+.js-enabled .app-map-static-attribution {
+  display: none;
+}
+
+[data-js="off"] .app-map-static {
+  display: block;
+}
+
+[data-js="off"] .app-map-static-attribution {
   display: block;
 }
 
@@ -18,12 +27,20 @@ noscript {
   display: none;
 }
 
+[data-js="off"] .app-route-directions {
+  display: block;
+}
+
 .app-flood-details {
   margin-top: 30px;
 }
 
 .js-enabled .app-flood-details {
   display: none;
+}
+
+[data-js="off"] .app-flood-details {
+  display: block;
 }
 
 .app-flood-warning-banner {

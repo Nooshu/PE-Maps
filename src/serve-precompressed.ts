@@ -68,7 +68,11 @@ export function servePrecompressed(publicRoot: string): RequestHandler {
       return
     }
 
-    if (request.path.endsWith(".br") || request.path.endsWith(".map")) {
+    if (
+      request.path.endsWith(".br") ||
+      request.path.endsWith(".map") ||
+      request.path === "/_worker.js"
+    ) {
       response.status(404).end()
       return
     }

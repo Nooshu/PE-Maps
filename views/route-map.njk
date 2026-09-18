@@ -36,16 +36,7 @@
         Follow this walking route from Buckingham Palace to Westminster Abbey.
       </p>
       <div id="{{ map.containerId }}">
-        <noscript>
-          <img
-            class="app-map-static"
-            src="{{ map.staticImageSrc }}"
-            width="{{ map.width }}"
-            height="{{ map.height }}"
-            alt="{{ map.mapLabel }}"
-          >
-          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
-        </noscript>
+        {% include "partials/map-fallback.njk" %}
       </div>
       <div class="app-route-directions">
         <h2 class="govuk-heading-m">Walking directions</h2>
