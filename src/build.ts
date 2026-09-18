@@ -6,8 +6,16 @@ import path from "node:path"
 import * as esbuild from "esbuild"
 import nunjucks from "nunjucks"
 
-import { basicMap, directionsTableParams } from "./maps/basic-map.js"
+import {
+  basicMap,
+  directionsTableParams,
+  planningKeyTableParams,
+  planningRoadsTableParams,
+  planningFacilitiesSummaryParams,
+  planningTimetableTableParams
+} from "./maps/basic-map.js"
 import { floodRiskMap } from "./maps/flood-risk-map.js"
+import { planningMap } from "./maps/planning-map.js"
 import { renderStaticMap } from "./maps/render-static-map.js"
 import { routeMap } from "./maps/route-map.js"
 import {
@@ -16,6 +24,7 @@ import {
   govukOverrideCss,
   interactiveMapCss,
   interactiveMapDatasetsCss,
+  interactiveMapKeyCss,
   projectRoot,
   publicDir,
   viewsDir
@@ -111,7 +120,8 @@ export async function build(): Promise<void> {
     entryPoints: [
       path.join(projectRoot, "src/client/map.ts"),
       path.join(projectRoot, "src/client/route-map.ts"),
-      path.join(projectRoot, "src/client/flood-risk-map.ts")
+      path.join(projectRoot, "src/client/flood-risk-map.ts"),
+      path.join(projectRoot, "src/client/planning-map.ts")
     ],
     bundle: true,
     format: "esm",
@@ -150,6 +160,10 @@ export async function build(): Promise<void> {
     path.join(publicDir, "stylesheets/interactive-map-datasets.css")
   )
   await copyStylesheetOrScript(
+    interactiveMapKeyCss,
+    path.join(publicDir, "stylesheets/interactive-map-key.css")
+  )
+  await copyStylesheetOrScript(
     govukOverrideCss,
     path.join(publicDir, "stylesheets/govuk-override.css")
   )
@@ -160,6 +174,7 @@ export async function build(): Promise<void> {
   await renderStaticMap(basicMap, path.join(publicDir, "images/basic-map.png"))
   await renderStaticMap(routeMap, path.join(publicDir, "images/route-map.png"))
   await renderStaticMap(floodRiskMap, path.join(publicDir, "images/flood-risk-map.png"))
+  await renderStaticMap(planningMap, path.join(publicDir, "images/planning-map.png"))
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true
@@ -177,6 +192,17 @@ export async function build(): Promise<void> {
       template: "flood-risk-map.njk",
       output: "flood-risk-map.html",
       context: { map: floodRiskMap }
+    },
+    {
+      template: "planning-map.njk",
+      output: "planning-map.html",
+      context: {
+        map: planningMap,
+        keyTable: planningKeyTableParams(planningMap),
+        roadsTable: planningRoadsTableParams(planningMap),
+        timetableTable: planningTimetableTableParams(planningMap),
+        facilitiesSummary: planningFacilitiesSummaryParams(planningMap)
+      }
     }
   ]
 

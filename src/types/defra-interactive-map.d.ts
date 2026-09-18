@@ -41,7 +41,16 @@ declare module "@defra/interactive-map/plugins/datasets" {
         stroke?: string
         strokeWidth?: number
         fill?: string
+        fillPattern?: string
+        fillPatternForegroundColor?: string
+        fillPatternBackgroundColor?: string
+        keySymbolShape?: "polygon" | "line"
+        symbolDescription?: string
       }
     }>
   }): unknown
+}
+
+declare module "@defra/interactive-map/plugins/map-key" {
+  export default function createMapKeyPlugin(options?: { noKeyItemText?: string }): unknown
 }

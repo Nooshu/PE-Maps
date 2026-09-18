@@ -48,6 +48,58 @@ export type FloodWarning = {
   whatYouShouldDo: string[]
 }
 
+export type PlanningKeyItem = {
+  label: string
+  description: string
+}
+
+export type PlanningRoad = {
+  name: string
+  effect: string
+}
+
+export type PlanningFacility = {
+  name: string
+  details: string
+}
+
+export type PlanningTimetableEvent = {
+  event: string
+  date: string
+}
+
+export type PlanningContact = {
+  name: string
+  role: string
+  organisation: string
+  email: string
+  phone: string
+  hours: string
+}
+
+export type PlanningApplication = {
+  bannerTitle: string
+  headline: string
+  summary: string
+  status: string
+  reference: string
+  appellant: string
+  localPlanningAuthority: string
+  siteAddress: string
+  proposal: string
+  procedure: string
+  inquiryOpens: string
+  decisionExpected: string
+  key: PlanningKeyItem[]
+  locations: string[]
+  roads: PlanningRoad[]
+  facilities: PlanningFacility[]
+  wildlife: string[]
+  impacts: string[]
+  timetable: PlanningTimetableEvent[]
+  contacts: PlanningContact[]
+}
+
 export type MapDefinition = {
   containerId: string
   mapLabel: string
@@ -67,6 +119,7 @@ export type MapDefinition = {
   polygons: MapPolygon[]
   directions?: RouteDirections
   floodWarning?: FloodWarning
+  planningApplication?: PlanningApplication
   staticImageSrc: string
   staticImageAttribution: string
 }
@@ -114,10 +167,12 @@ export function interactiveMapOptions(map: MapDefinition) {
   }
 }
 
-export function lineFeatureCollection(map: MapDefinition) {
+export function lineFeatureCollection(map: MapDefinition, lineIds?: readonly string[]) {
+  const lines = lineIds ? map.lines.filter((line) => lineIds.includes(line.id)) : map.lines
+
   return {
     type: "FeatureCollection" as const,
-    features: map.lines.map((line) => ({
+    features: lines.map((line) => ({
       type: "Feature" as const,
       properties: { id: line.id },
       geometry: {
@@ -143,16 +198,86 @@ function closedRing(coordinates: LonLat[]): LonLat[] {
   return [...coordinates, first]
 }
 
-export function polygonFeatureCollection(map: MapDefinition) {
+export function polygonFeatureCollection(map: MapDefinition, polygonIds?: readonly string[]) {
+  const polygons = polygonIds
+    ? map.polygons.filter((polygon) => polygonIds.includes(polygon.id))
+    : map.polygons
+
   return {
     type: "FeatureCollection" as const,
-    features: map.polygons.map((polygon) => ({
+    features: polygons.map((polygon) => ({
       type: "Feature" as const,
       properties: { id: polygon.id },
       geometry: {
         type: "Polygon" as const,
         coordinates: [closedRing(polygon.coordinates)]
       }
+    }))
+  }
+}
+
+export function planningKeyTableParams(map: MapDefinition) {
+  const planningApplication = map.planningApplication
+
+  if (!planningApplication) {
+    return undefined
+  }
+
+  return {
+    caption: "Map key",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "On the map" }, { text: "What it shows" }],
+    rows: planningApplication.key.map((item) => [{ text: item.label }, { text: item.description }])
+  }
+}
+
+export function planningTimetableTableParams(map: MapDefinition) {
+  const planningApplication = map.planningApplication
+
+  if (!planningApplication) {
+    return undefined
+  }
+
+  return {
+    caption: "Inquiry timetable",
+    captionClasses: "govuk-table__caption--m",
+    firstCellIsHeader: true,
+    head: [{ text: "Event" }, { text: "Date" }],
+    rows: planningApplication.timetable.map((item) => [
+      { text: item.event },
+      { text: item.date }
+    ])
+  }
+}
+
+export function planningRoadsTableParams(map: MapDefinition) {
+  const planningApplication = map.planningApplication
+
+  if (!planningApplication) {
+    return undefined
+  }
+
+  return {
+    caption: "Roads around the appeal site",
+    captionClasses: "govuk-visually-hidden",
+    firstCellIsHeader: true,
+    head: [{ text: "Road" }, { text: "What would change" }],
+    rows: planningApplication.roads.map((road) => [{ text: road.name }, { text: road.effect }])
+  }
+}
+
+export function planningFacilitiesSummaryParams(map: MapDefinition) {
+  const planningApplication = map.planningApplication
+
+  if (!planningApplication) {
+    return undefined
+  }
+
+  return {
+    rows: planningApplication.facilities.map((facility) => ({
+      key: { text: facility.name },
+      value: { text: facility.details }
     }))
   }
 }

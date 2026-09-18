@@ -29,3 +29,7 @@ noscript {
 .app-flood-warning-banner {
   --_govuk-notification-banner-colour: #d4351c;
 }
+
+.app-planning-fallback {
+  margin-top: 30px;
+}

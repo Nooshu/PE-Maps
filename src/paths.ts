@@ -15,3 +15,7 @@ export const interactiveMapDatasetsCss = path.join(
   projectRoot,
   "node_modules/@defra/interactive-map/plugins/datasets/dist/css/index.css"
 )
+export const interactiveMapKeyCss = path.join(
+  projectRoot,
+  "node_modules/@defra/interactive-map/plugins/map-key/dist/css/index.css"
+)

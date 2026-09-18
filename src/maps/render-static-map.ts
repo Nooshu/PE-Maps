@@ -79,6 +79,15 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
     zoomRange: { min: 1, max: 19 }
   })
 
+  for (const polygon of map.polygons) {
+    staticMap.addPolygon({
+      coords: closedRing(polygon.coordinates),
+      color: polygon.strokeColor ?? defaultStrokeColor,
+      width: polygon.strokeWidth ?? 3,
+      fill: polygon.fillColor ?? defaultFillColor
+    })
+  }
+
   for (const line of map.lines) {
     staticMap.addLine({
       coords: line.coordinates,
@@ -95,15 +104,6 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
       height: 48,
       offsetX: 16,
       offsetY: 48
-    })
-  }
-
-  for (const polygon of map.polygons) {
-    staticMap.addPolygon({
-      coords: closedRing(polygon.coordinates),
-      color: polygon.strokeColor ?? defaultStrokeColor,
-      width: polygon.strokeWidth ?? 3,
-      fill: polygon.fillColor ?? defaultFillColor
     })
   }
 

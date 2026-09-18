@@ -1,0 +1,243 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% block pageTitle %}Planning appeal map, Lewes – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-key.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Planning appeal map"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Planning appeal at Phoenix Industrial Estate, Lewes</h1>
+      <p class="govuk-body-l">
+        The Planning Inspectorate is holding an inquiry into a refused mixed-use development on the north side of Lewes.
+      </p>
+      <p class="govuk-body">
+        This map shows the appeal site, the wildlife and trees along the River Ouse, the construction access, and nearby facilities. Use the key on the map to see what each colour means.
+      </p>
+
+      {% call govukNotificationBanner({
+        titleText: map.planningApplication.bannerTitle
+      }) %}
+        <p class="govuk-notification-banner__heading">{{ map.planningApplication.headline }}</p>
+        <p class="govuk-body">{{ map.planningApplication.summary }}</p>
+      {% endcall %}
+
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% set statusHtml %}
+        {{ govukTag({ text: map.planningApplication.status, classes: "govuk-tag--blue" }) }}
+      {% endset %}
+
+      <h2 class="govuk-heading-m">Appeal details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Status" },
+            value: { html: statusHtml }
+          },
+          {
+            key: { text: "Appeal reference" },
+            value: { text: map.planningApplication.reference }
+          },
+          {
+            key: { text: "Site" },
+            value: { text: map.planningApplication.siteAddress }
+          },
+          {
+            key: { text: "Proposal" },
+            value: { text: map.planningApplication.proposal }
+          },
+          {
+            key: { text: "Appellant" },
+            value: { text: map.planningApplication.appellant }
+          },
+          {
+            key: { text: "Local planning authority" },
+            value: { text: map.planningApplication.localPlanningAuthority }
+          },
+          {
+            key: { text: "Procedure" },
+            value: { text: map.planningApplication.procedure }
+          },
+          {
+            key: { text: "Inquiry opens" },
+            value: { text: map.planningApplication.inquiryOpens }
+          },
+          {
+            key: { text: "Decision expected" },
+            value: { text: map.planningApplication.decisionExpected }
+          }
+        ]
+      }) }}
+
+      {{ govukWarningText({
+        text: "Do not send comments to the inspector. Send them to the case officer using the contact details on this page.",
+        iconFallbackText: "Warning"
+      }) }}
+
+      {{ govukTable(timetableTable) }}
+
+      <div class="app-planning-fallback">
+        <h2 class="govuk-heading-m">If you cannot use the map</h2>
+        <p class="govuk-body">
+          This section describes the same area shown on the map, including the proposed development, roads, nearby facilities, wildlife and the effect on Lewes.
+        </p>
+
+        {% set keyHtml %}
+          <p class="govuk-body">The image of the map uses the same colours as the interactive map.</p>
+          {{ govukTable(keyTable) }}
+        {% endset %}
+
+        {% set locationsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for location in map.planningApplication.locations %}
+              <li>{{ location }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set roadsHtml %}
+          {{ govukTable(roadsTable) }}
+        {% endset %}
+
+        {% set facilitiesHtml %}
+          {{ govukSummaryList({
+            rows: facilitiesSummary.rows
+          }) }}
+        {% endset %}
+
+        {% set wildlifeHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.planningApplication.wildlife %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {% set impactsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in map.planningApplication.impacts %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+
+        {{ govukAccordion({
+          id: "planning-map-details",
+          headingLevel: 3,
+          items: [
+            {
+              heading: { text: "What the map shows" },
+              content: { html: keyHtml }
+            },
+            {
+              heading: { text: "Where the development is" },
+              content: { html: locationsHtml }
+            },
+            {
+              heading: { text: "Roads and access" },
+              content: { html: roadsHtml }
+            },
+            {
+              heading: { text: "Nearby facilities" },
+              content: { html: facilitiesHtml }
+            },
+            {
+              heading: { text: "Wildlife, trees and flooding" },
+              content: { html: wildlifeHtml }
+            },
+            {
+              heading: { text: "Effect on Lewes and the surrounding area" },
+              content: { html: impactsHtml }
+            }
+          ]
+        }) }}
+      </div>
+
+      <h2 class="govuk-heading-m">Contact the Planning Inspectorate</h2>
+      <p class="govuk-body">
+        Use these details if you have already made a representation and want to speak at the inquiry, or if you need help with the appeal documents.
+      </p>
+
+      {% set caseOfficer = map.planningApplication.contacts[0] %}
+      {% call govukInsetText() %}
+        <h3 class="govuk-heading-s">{{ caseOfficer.role }}</h3>
+        <ul class="govuk-list">
+          <li>{{ caseOfficer.name }}, {{ caseOfficer.organisation }}</li>
+          <li>Email: <a class="govuk-link" href="mailto:{{ caseOfficer.email }}">{{ caseOfficer.email }}</a></li>
+          <li>Telephone: {{ caseOfficer.phone }}</li>
+          <li>{{ caseOfficer.hours }}</li>
+        </ul>
+        <p class="govuk-body">
+          <a class="govuk-link" href="https://www.gov.uk/call-charges">Find out about call charges</a>
+        </p>
+      {% endcall %}
+
+      {% set otherContactsHtml %}
+        {% for contact in map.planningApplication.contacts %}
+          {% if not loop.first %}
+            <h3 class="govuk-heading-s">{{ contact.role }}</h3>
+            <ul class="govuk-list">
+              <li>{{ contact.name }}, {{ contact.organisation }}</li>
+              <li>Email: <a class="govuk-link" href="mailto:{{ contact.email }}">{{ contact.email }}</a></li>
+              <li>Telephone: {{ contact.phone }}</li>
+              <li>{{ contact.hours }}</li>
+            </ul>
+          {% endif %}
+        {% endfor %}
+      {% endset %}
+
+      {{ govukDetails({
+        summaryText: "Other people to contact about this appeal",
+        html: otherContactsHtml
+      }) }}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/planning-map.js"></script>
+{% endblock %}
