@@ -1,0 +1,31 @@
+.app-map-static {
+  display: block;
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+  object-position: center;
+}
+
+noscript {
+  display: block;
+}
+
+.app-route-directions {
+  margin-top: 30px;
+}
+
+.js-enabled .app-route-directions {
+  display: none;
+}
+
+.app-flood-details {
+  margin-top: 30px;
+}
+
+.js-enabled .app-flood-details {
+  display: none;
+}
+
+.app-flood-warning-banner {
+  --_govuk-notification-banner-colour: #d4351c;
+}

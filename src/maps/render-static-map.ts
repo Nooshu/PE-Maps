@@ -18,13 +18,14 @@ type StaticMapsInstance = {
     offsetX: number
     offsetY: number
   }) => void
+  addLine: (options: { coords: LonLat[]; color?: string; width?: number }) => void
   addPolygon: (options: {
     coords: LonLat[]
     color?: string
     width?: number
     fill?: string
   }) => void
-  render: (center: LonLat, zoom: number) => Promise<void>
+  render: (center?: LonLat | number[], zoom?: number) => Promise<void>
   image: {
     save: (fileName: string) => Promise<void>
   }
@@ -33,6 +34,8 @@ type StaticMapsInstance = {
 type StaticMapsConstructor = new (options: {
   width: number
   height: number
+  paddingX?: number
+  paddingY?: number
   tileUrl: string
   tileSubdomains: string[]
   tileRequestHeader: Record<string, string>
@@ -45,6 +48,7 @@ const StaticMaps = StaticMapsModule.default ?? (StaticMapsModule as unknown as S
 const markerImagePath = path.join(projectRoot, "assets/images/map-marker.png")
 const defaultStrokeColor = "#1d70b8bb"
 const defaultFillColor = "#1d70b833"
+const defaultLineColor = "#1d70b8ee"
 
 function closedRing(coordinates: LonLat[]): LonLat[] {
   const first = coordinates[0]
@@ -65,6 +69,8 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
   const staticMap = new StaticMaps({
     width: map.width,
     height: map.height,
+    paddingX: map.bounds ? 48 : 0,
+    paddingY: map.bounds ? 48 : 0,
     tileUrl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     tileSubdomains: ["a", "b", "c"],
     tileRequestHeader: {
@@ -72,6 +78,14 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
     },
     zoomRange: { min: 1, max: 19 }
   })
+
+  for (const line of map.lines) {
+    staticMap.addLine({
+      coords: line.coordinates,
+      color: line.color ?? defaultLineColor,
+      width: line.width ?? 6
+    })
+  }
 
   for (const marker of map.markers) {
     staticMap.addMarker({
@@ -93,7 +107,12 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
     })
   }
 
-  await staticMap.render(map.center, map.zoom)
+  if (map.bounds) {
+    await staticMap.render(map.bounds)
+  } else {
+    await staticMap.render(map.center, map.zoom)
+  }
+
   await mkdir(path.dirname(outputPath), { recursive: true })
   await staticMap.image.save(outputPath)
 }

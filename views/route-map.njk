@@ -1,11 +1,13 @@
 {% extends "layouts/base.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
 
-{% block pageTitle %}Basic map – GOV.UK{% endblock %}
+{% block pageTitle %}Route map – GOV.UK{% endblock %}
 
 {% block pageStyles %}
   <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
 {% endblock %}
 
 {% block mapLoading %}
@@ -20,7 +22,7 @@
         href: "/"
       },
       {
-        text: "Basic map"
+        text: "Route map"
       }
     ]
   }) }}
@@ -29,9 +31,9 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-l">Basic map</h1>
+      <h1 class="govuk-heading-l">Walking route from Buckingham Palace to Westminster Abbey</h1>
       <p class="govuk-body">
-        An accessible map of London, United Kingdom.
+        Follow this walking route from Buckingham Palace to Westminster Abbey.
       </p>
       <div id="{{ map.containerId }}">
         <noscript>
@@ -45,10 +47,15 @@
           <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
         </noscript>
       </div>
+      <div class="app-route-directions">
+        <h2 class="govuk-heading-m">Walking directions</h2>
+        <p class="govuk-body">{{ map.directions.summary }}</p>
+        {{ govukTable(directionsTable) }}
+      </div>
     </div>
   </div>
 {% endblock %}
 
 {% block pageScripts %}
-  <script type="module" src="/javascripts/map.js"></script>
+  <script type="module" src="/javascripts/route-map.js"></script>
 {% endblock %}

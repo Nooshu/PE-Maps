@@ -1,0 +1,125 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block pageTitle %}Flood risk map – GOV.UK{% endblock %}
+
+{% block pageStyles %}
+  <link rel="stylesheet" href="/stylesheets/interactive-map.css">
+  <link rel="stylesheet" href="/stylesheets/interactive-map-datasets.css">
+{% endblock %}
+
+{% block mapLoading %}
+  <script>document.body.classList.add('im-is-loading')</script>
+{% endblock %}
+
+{% block pageBeforeContent %}
+  {{ govukBreadcrumbs({
+    items: [
+      {
+        text: "Home",
+        href: "/"
+      },
+      {
+        text: "Flood risk map"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Flood risk in Bridgnorth</h1>
+      <p class="govuk-body">
+        See which parts of Bridgnorth are covered by the flood warning.
+      </p>
+      <div id="{{ map.containerId }}">
+        <noscript>
+          <img
+            class="app-map-static"
+            src="{{ map.staticImageSrc }}"
+            width="{{ map.width }}"
+            height="{{ map.height }}"
+            alt="{{ map.mapLabel }}"
+          >
+          <p class="govuk-body-s">{{ map.staticImageAttribution }}</p>
+        </noscript>
+      </div>
+
+      {% if map.floodWarning %}
+      <div class="app-flood-details">
+        {% call govukNotificationBanner({
+          titleText: map.floodWarning.bannerTitle,
+          role: "alert",
+          disableAutoFocus: true,
+          classes: "app-flood-warning-banner"
+        }) %}
+          <p class="govuk-notification-banner__heading">{{ map.floodWarning.headline }}</p>
+          <p class="govuk-body">{{ map.floodWarning.summary }}</p>
+        {% endcall %}
+
+        {{ govukWarningText({
+          text: "There is a danger to life. Leave the area if you are told to.",
+          iconFallbackText: "Warning"
+        }) }}
+
+        <h2 class="govuk-heading-m">Flood warning details</h2>
+        {% set severityHtml %}
+          {{ govukTag({ text: "Severe", classes: "govuk-tag--red" }) }}
+        {% endset %}
+        {% set roadsHtml %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for road in map.floodWarning.roads %}
+              <li>{{ road }}</li>
+            {% endfor %}
+          </ul>
+        {% endset %}
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: { text: "Severity" },
+              value: { html: severityHtml }
+            },
+            {
+              key: { text: "Risk to life" },
+              value: { text: map.floodWarning.riskToLife }
+            },
+            {
+              key: { text: "Location" },
+              value: { text: map.floodWarning.location }
+            },
+            {
+              key: { text: "Affected roads and locations" },
+              value: { html: roadsHtml }
+            },
+            {
+              key: { text: "Warning started" },
+              value: { text: map.floodWarning.warningStarted }
+            },
+            {
+              key: { text: "Expected to end" },
+              value: { text: map.floodWarning.expectedUntil }
+            }
+          ]
+        }) }}
+
+        <h2 class="govuk-heading-m">What you should do</h2>
+        <ul class="govuk-list govuk-list--bullet">
+          {% for action in map.floodWarning.whatYouShouldDo %}
+            <li>{{ action }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pageScripts %}
+  <script type="module" src="/javascripts/flood-risk-map.js"></script>
+{% endblock %}

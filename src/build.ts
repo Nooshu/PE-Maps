@@ -6,12 +6,16 @@ import path from "node:path"
 import * as esbuild from "esbuild"
 import nunjucks from "nunjucks"
 
-import { basicMap } from "./maps/basic-map.js"
+import { basicMap, directionsTableParams } from "./maps/basic-map.js"
+import { floodRiskMap } from "./maps/flood-risk-map.js"
 import { renderStaticMap } from "./maps/render-static-map.js"
+import { routeMap } from "./maps/route-map.js"
 import {
   govukFrontendDir,
   govukFrontendRoot,
+  govukOverrideCss,
   interactiveMapCss,
+  interactiveMapDatasetsCss,
   projectRoot,
   publicDir,
   viewsDir
@@ -104,11 +108,29 @@ export async function build(): Promise<void> {
   await mkdir(publicDir, { recursive: true })
 
   await esbuild.build({
-    entryPoints: [path.join(projectRoot, "src/client/map.ts")],
+    entryPoints: [
+      path.join(projectRoot, "src/client/map.ts"),
+      path.join(projectRoot, "src/client/route-map.ts"),
+      path.join(projectRoot, "src/client/flood-risk-map.ts")
+    ],
     bundle: true,
     format: "esm",
     sourcemap: false,
-    outfile: path.join(publicDir, "javascripts/map.js")
+    outdir: path.join(publicDir, "javascripts"),
+    plugins: [
+      {
+        name: "skip-unused-arcgis",
+        setup(build) {
+          build.onResolve({ filter: /^@arcgis\/core/ }, () => ({
+            path: "arcgis-stub",
+            namespace: "empty-module"
+          }))
+          build.onLoad({ filter: /.*/, namespace: "empty-module" }, () => ({
+            contents: "export default {}\n"
+          }))
+        }
+      }
+    ]
   })
 
   await copyStylesheetOrScript(
@@ -123,11 +145,21 @@ export async function build(): Promise<void> {
     interactiveMapCss,
     path.join(publicDir, "stylesheets/interactive-map.css")
   )
+  await copyStylesheetOrScript(
+    interactiveMapDatasetsCss,
+    path.join(publicDir, "stylesheets/interactive-map-datasets.css")
+  )
+  await copyStylesheetOrScript(
+    govukOverrideCss,
+    path.join(publicDir, "stylesheets/govuk-override.css")
+  )
   await cp(path.join(govukFrontendRoot, "assets"), path.join(publicDir, "assets"), {
     recursive: true
   })
 
   await renderStaticMap(basicMap, path.join(publicDir, "images/basic-map.png"))
+  await renderStaticMap(routeMap, path.join(publicDir, "images/route-map.png"))
+  await renderStaticMap(floodRiskMap, path.join(publicDir, "images/flood-risk-map.png"))
 
   const nunjucksEnv = nunjucks.configure([viewsDir, govukFrontendDir], {
     autoescape: true
@@ -135,7 +167,17 @@ export async function build(): Promise<void> {
 
   const pages: Array<{ template: string; output: string; context?: Record<string, unknown> }> = [
     { template: "index.njk", output: "index.html" },
-    { template: "basic-map.njk", output: "basic-map.html", context: { map: basicMap } }
+    { template: "basic-map.njk", output: "basic-map.html", context: { map: basicMap } },
+    {
+      template: "route-map.njk",
+      output: "route-map.html",
+      context: { map: routeMap, directionsTable: directionsTableParams(routeMap) }
+    },
+    {
+      template: "flood-risk-map.njk",
+      output: "flood-risk-map.html",
+      context: { map: floodRiskMap }
+    }
   ]
 
   await Promise.all(

@@ -37,6 +37,7 @@ Do not use version ranges (`^`, `~`) in `package.json`. `.npmrc` sets `save-exac
 | --- | --- |
 | `views/` | Nunjucks pages. `index.njk` is the homepage; add examples as sibling templates |
 | `views/layouts/base.njk` | GOV.UK page template, phase banner, GOV.UK CSS/JS |
+| `assets/stylesheets/govuk-override.css` | Custom CSS that overrides GOV.UK Frontend and page styles via the cascade |
 | `src/build.ts` | Bundles client JS, copies assets, renders HTML, writes `.br` files |
 | `src/server.ts` | Serves `public/` with Brotli when `Accept-Encoding: br` |
 | `src/client/` | Browser TypeScript (ESM, bundled by esbuild) |
@@ -57,6 +58,7 @@ Clean URLs: `/basic-map` serves `public/basic-map.html`.
 - Use GOV.UK Frontend Nunjucks macros, not hand-rolled HTML that copies a component. Get markup from the [Design System](https://design-system.service.gov.uk/) Nunjucks tab.
 - Sanitise any HTML passed into macros (`html` options).
 - Use Design System CSS classes (`govuk-heading-*`, `govuk-body`, grid) for layout and typography. Do not invent a parallel visual language.
+- Put all custom CSS in `assets/stylesheets/govuk-override.css`. Do not use inline `<style>` blocks or page-level stylesheets for overrides. Load it last in the `<head>` (after GOV.UK Frontend and page CSS) so the cascade wins. Do not use `!important`.
 - Initialise GOV.UK Frontend with `initAll()` from `govuk-frontend.min.js`.
 - Pin GOV.UK Frontend and Interactive Map to exact versions.
 - Do not copy, compress, or serve JS/CSS source maps. Strip `sourceMappingURL` comments from copied CSS/JS.

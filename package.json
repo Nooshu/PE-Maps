@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "check:deps": "node scripts/check-dependencies.mjs",
-    "dev": "npm run build && concurrently -k \"tsx watch --include views --include src/client --include src/maps src/build.ts\" \"tsx watch src/server.ts\"",
+    "dev": "npm run build && concurrently -k \"tsx watch --include views --include src/client --include src/maps --include assets src/build.ts\" \"tsx watch src/server.ts\"",
     "preinstall": "node scripts/check-dependencies.mjs",
     "start": "npm run build && tsx src/server.ts",
     "typecheck": "tsc --noEmit"
