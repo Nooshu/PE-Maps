@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises"
+import { promises as fs } from "node:fs"
 import path from "node:path"
 
 import type { RequestHandler } from "express"
@@ -20,20 +20,20 @@ const contentTypes: Record<string, string> = {
   ".xml": "application/xml; charset=utf-8"
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
+export async function fileExists(filePath: string): Promise<boolean> {
   try {
-    await access(filePath)
+    await fs.access(filePath)
     return true
   } catch {
     return false
   }
 }
 
-function isInsidePublicRoot(publicRoot: string, filePath: string): boolean {
+export function isInsidePublicRoot(publicRoot: string, filePath: string): boolean {
   return filePath === publicRoot || filePath.startsWith(`${publicRoot}${path.sep}`)
 }
 
-function candidatePublicPaths(publicRoot: string, urlPath: string): string[] {
+export function candidatePublicPaths(publicRoot: string, urlPath: string): string[] {
   const relativePath = decodeURIComponent(urlPath)
     .replace(/^\/+/, "")
     .replace(/\/+$/, "")
@@ -51,12 +51,10 @@ function candidatePublicPaths(publicRoot: string, urlPath: string): string[] {
     return [resolvedPath]
   }
 
-  return [resolvedPath, `${resolvedPath}.html`, path.join(resolvedPath, "index.html")].filter(
-    (filePath) => isInsidePublicRoot(publicRoot, filePath)
-  )
+  return [resolvedPath, `${resolvedPath}.html`, path.join(resolvedPath, "index.html")]
 }
 
-function contentTypeFor(filePath: string): string {
+export function contentTypeFor(filePath: string): string {
   return contentTypes[path.extname(filePath)] ?? "application/octet-stream"
 }
 
@@ -93,7 +91,7 @@ export function servePrecompressed(publicRoot: string): RequestHandler {
     }
 
     if (path.extname(filePath) === ".html" && isJavaScriptOffQuery(request.query)) {
-      const html = htmlWithoutJavaScript(await readFile(filePath, "utf8"))
+      const html = htmlWithoutJavaScript(await fs.readFile(filePath, "utf8"))
 
       response.setHeader("Content-Type", contentTypeFor(filePath))
       response.send(html)

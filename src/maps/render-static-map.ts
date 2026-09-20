@@ -44,8 +44,22 @@ type StaticMapsConstructor = new (options: {
   zoomRange: { min: number; max: number }
 }) => StaticMapsInstance
 
+export function resolveStaticMapsConstructor(module: {
+  default?: StaticMapsConstructor
+}): StaticMapsConstructor {
+  return module.default ?? (module as unknown as StaticMapsConstructor)
+}
+
 const StaticMapsModule = require("staticmaps") as { default?: StaticMapsConstructor }
-const StaticMaps = StaticMapsModule.default ?? (StaticMapsModule as unknown as StaticMapsConstructor)
+let mapsConstructor = resolveStaticMapsConstructor(StaticMapsModule)
+
+export function setStaticMapsConstructor(constructor?: StaticMapsConstructor): void {
+  mapsConstructor = constructor ?? resolveStaticMapsConstructor(StaticMapsModule)
+}
+
+export function getStaticMaps(override?: StaticMapsConstructor): StaticMapsConstructor {
+  return override ?? mapsConstructor
+}
 
 const markerImagePath = path.join(projectRoot, "assets/images/map-marker.png")
 const defaultStrokeColor = "#1d70b8bb"
@@ -55,7 +69,7 @@ const markerWidth = 32
 const markerHeight = 48
 const boundsPadding = 48
 
-function closedRing(coordinates: LonLat[]): LonLat[] {
+export function closedRing(coordinates: LonLat[]): LonLat[] {
   const first = coordinates[0]
   const last = coordinates.at(-1)
 
@@ -133,8 +147,17 @@ async function readCachedHash(metaPath: string): Promise<string | undefined> {
   }
 }
 
-export async function renderStaticMap(map: MapDefinition, outputPath: string): Promise<void> {
-  const staticMap = new StaticMaps({
+export type RenderStaticMapOptions = {
+  Maps?: StaticMapsConstructor
+}
+
+export async function renderStaticMap(
+  map: MapDefinition,
+  outputPath: string,
+  options: RenderStaticMapOptions = {}
+): Promise<void> {
+  const Maps = getStaticMaps(options.Maps)
+  const staticMap = new Maps({
     width: map.width,
     height: map.height,
     paddingX: map.bounds ? boundsPadding : 0,
@@ -186,13 +209,19 @@ export async function renderStaticMap(map: MapDefinition, outputPath: string): P
   await staticMap.image.save(outputPath)
 }
 
+export type EnsureStaticMapOptions = {
+  force?: boolean
+  cacheDirectory?: string
+  Maps?: StaticMapsConstructor
+}
+
 export async function ensureStaticMap(
   map: MapDefinition,
   outputPath: string,
-  options: { force?: boolean } = {}
+  options: EnsureStaticMapOptions = {}
 ): Promise<"cached" | "rendered"> {
   const fileName = staticMapFileName(map)
-  const cachePath = path.join(staticMapsDir, fileName)
+  const cachePath = path.join(options.cacheDirectory ?? staticMapsDir, fileName)
   const metaPath = `${cachePath}.json`
   const relativeOutput = path.relative(projectRoot, outputPath)
   const hash = await staticMapFingerprint(map)
@@ -216,8 +245,8 @@ export async function ensureStaticMap(
   console.log(`Rendering ${relativeOutput} from OpenStreetMap tiles`)
 
   const tempPath = `${cachePath}.tmp.png`
-  await mkdir(staticMapsDir, { recursive: true })
-  await renderStaticMap(map, tempPath)
+  await mkdir(path.dirname(cachePath), { recursive: true })
+  await renderStaticMap(map, tempPath, { Maps: options.Maps })
   await writeFile(metaPath, `${JSON.stringify({ hash }, null, 2)}\n`)
   await rename(tempPath, cachePath)
   await mkdir(path.dirname(outputPath), { recursive: true })
@@ -228,7 +257,7 @@ export async function ensureStaticMap(
 export async function ensureStaticMaps(
   maps: readonly MapDefinition[],
   outputDirectory: string,
-  options: { force?: boolean } = {}
+  options: EnsureStaticMapOptions = {}
 ): Promise<void> {
   let cached = 0
   let rendered = 0

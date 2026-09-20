@@ -4,7 +4,10 @@ import { mkdir, readFile, readdir, rm, writeFile, cp } from "node:fs/promises"
 import path from "node:path"
 
 import * as esbuild from "esbuild"
+import type { Plugin } from "esbuild"
 import nunjucks from "nunjucks"
+
+import { runIfMain } from "./cli.js"
 
 import {
   basicMap,
@@ -64,6 +67,25 @@ import { cloudflareHeaders, robotsTxt } from "./robots.js"
 
 const brotliCompressAsync = promisify(brotliCompress)
 
+export function shouldForceStaticMaps(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.FORCE_STATIC_MAPS === "1"
+}
+
+export function createArcgisStubPlugin(): Plugin {
+  return {
+    name: "skip-unused-arcgis",
+    setup(build) {
+      build.onResolve({ filter: /^@arcgis\/core/ }, () => ({
+        path: "arcgis-stub",
+        namespace: "empty-module"
+      }))
+      build.onLoad({ filter: /.*/, namespace: "empty-module" }, () => ({
+        contents: "export default {}\n"
+      }))
+    }
+  }
+}
+
 const compressibleExtensions = new Set([
   ".css",
   ".html",
@@ -76,7 +98,7 @@ const compressibleExtensions = new Set([
   ".xml"
 ])
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   if (bytes < 1024) {
     return `${bytes} B`
   }
@@ -88,7 +110,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 ** 2).toFixed(1)} MB`
 }
 
-async function collectFiles(directory: string): Promise<string[]> {
+export async function collectFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true })
   const files: string[] = []
 
@@ -106,20 +128,20 @@ async function collectFiles(directory: string): Promise<string[]> {
   return files
 }
 
-function stripSourceMappingUrl(contents: string): string {
+export function stripSourceMappingUrl(contents: string): string {
   return `${contents
     .replace(/\/\*# sourceMappingURL=[\s\S]*?\*\//g, "")
     .replace(/\/\/[#@] sourceMappingURL=.*$/gm, "")
     .trimEnd()}\n`
 }
 
-async function copyStylesheetOrScript(from: string, to: string): Promise<void> {
+export async function copyStylesheetOrScript(from: string, to: string): Promise<void> {
   await mkdir(path.dirname(to), { recursive: true })
   const contents = await readFile(from, "utf8")
   await writeFile(to, stripSourceMappingUrl(contents))
 }
 
-async function compressFile(filePath: string): Promise<void> {
+export async function compressFile(filePath: string): Promise<void> {
   const extension = path.extname(filePath)
   const basename = path.basename(filePath)
 
@@ -173,20 +195,7 @@ export async function build(): Promise<void> {
     format: "esm",
     sourcemap: false,
     outdir: path.join(publicDir, "javascripts"),
-    plugins: [
-      {
-        name: "skip-unused-arcgis",
-        setup(build) {
-          build.onResolve({ filter: /^@arcgis\/core/ }, () => ({
-            path: "arcgis-stub",
-            namespace: "empty-module"
-          }))
-          build.onLoad({ filter: /.*/, namespace: "empty-module" }, () => ({
-            contents: "export default {}\n"
-          }))
-        }
-      }
-    ]
+    plugins: [createArcgisStubPlugin()]
   })
 
   await esbuild.build({
@@ -226,7 +235,7 @@ export async function build(): Promise<void> {
   })
 
   await ensureStaticMaps(staticMapDefinitions, path.join(publicDir, "images"), {
-    force: process.env.FORCE_STATIC_MAPS === "1"
+    force: shouldForceStaticMaps()
   })
 
   await writeFile(path.join(publicDir, "robots.txt"), robotsTxt)
@@ -351,4 +360,4 @@ export async function build(): Promise<void> {
   await Promise.all(files.map((filePath) => compressFile(filePath)))
 }
 
-await build()
+await runIfMain(import.meta.url, build)

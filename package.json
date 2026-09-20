@@ -11,6 +11,8 @@
     "maps:static": "tsx src/write-static-maps.ts",
     "preinstall": "node scripts/check-dependencies.mjs",
     "start": "npm run build && tsx src/server.ts",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
@@ -27,10 +29,12 @@
     "@types/express": "5.0.6",
     "@types/node": "26.6.1",
     "@types/nunjucks": "3.2.6",
+    "@vitest/coverage-istanbul": "5.0.1",
     "concurrently": "10.0.5",
     "esbuild": "0.28.2",
     "staticmaps": "1.13.1",
     "tsx": "4.23.13",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
   }
 }
