@@ -1,7 +1,6 @@
 {% extends "layouts/base.njk" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block pageTitle %}Open map button – GOV.UK{% endblock %}
@@ -35,17 +34,6 @@
       <p class="govuk-body">
         The map of London stays closed until you choose to open it.
       </p>
-
-      {% set jsToggleHtml %}
-        <p class="govuk-body app-js-toggle app-js-toggle--off govuk-!-margin-bottom-0">
-          <a class="govuk-link" href="/open-map-button?js=off">View this page without JavaScript</a>
-        </p>
-        <p class="govuk-body app-js-toggle app-js-toggle--on govuk-!-margin-bottom-0">
-          <a class="govuk-link" href="/open-map-button">View this page with JavaScript</a>
-        </p>
-      {% endset %}
-      {{ govukInsetText({ html: jsToggleHtml }) }}
-
       <div id="{{ map.containerId }}">
         {{ govukWarningText({
           text: "You cannot open this map because JavaScript is not available.",
