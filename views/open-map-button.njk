@@ -9,10 +9,6 @@
   <link rel="stylesheet" href="/stylesheets/interactive-map.css">
 {% endblock %}
 
-{% block mapLoading %}
-  <script>document.body.classList.add('im-is-loading')</script>
-{% endblock %}
-
 {% block pageBeforeContent %}
   {{ govukBreadcrumbs({
     items: [
@@ -34,13 +30,12 @@
       <p class="govuk-body">
         The map of London stays closed until you choose to open it.
       </p>
-      <div id="{{ map.containerId }}">
-        {{ govukWarningText({
-          text: "You cannot open this map because JavaScript is not available.",
-          iconFallbackText: "Warning",
-          classes: "app-open-map-warning"
-        }) }}
-      </div>
+      <div id="{{ map.containerId }}"></div>
+      {{ govukWarningText({
+        text: "You cannot open this map because JavaScript is not available.",
+        iconFallbackText: "Warning",
+        classes: "app-open-map-warning"
+      }) }}
     </div>
   </div>
 {% endblock %}
