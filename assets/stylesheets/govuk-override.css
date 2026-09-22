@@ -80,11 +80,37 @@ html[data-prototype-banner="hidden"] .app-prototype-banner {
 }
 
 .js-enabled .app-map-static,
-.js-enabled .app-map-static-attribution {
+.js-enabled .app-map-static-attribution,
+.js-enabled .app-open-map-warning {
   display: none;
 }
 
-[data-js="off"] .app-map-static {
+.app-js-toggle--off {
+  display: none;
+}
+
+.app-js-toggle--on {
+  display: block;
+}
+
+.js-enabled .app-js-toggle--off {
+  display: block;
+}
+
+.js-enabled .app-js-toggle--on {
+  display: none;
+}
+
+[data-js="off"] .app-map-static,
+[data-js="off"] .app-open-map-warning {
+  display: block;
+}
+
+[data-js="off"] .app-js-toggle--off {
+  display: none;
+}
+
+[data-js="off"] .app-js-toggle--on {
   display: block;
 }
 

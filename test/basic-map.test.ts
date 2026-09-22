@@ -44,6 +44,7 @@ import { routeMap } from "../src/maps/route-map.js"
 import { titleExtentMap } from "../src/maps/title-extent-map.js"
 import { transportStatisticsMap } from "../src/maps/transport-statistics-map.js"
 import { treePreservationMap } from "../src/maps/tree-preservation-map.js"
+import { openMapButtonMap } from "../src/maps/open-map-button.js"
 import { mapFixture } from "./helpers/map-fixture.js"
 
 const tableFns: Array<(map: MapDefinition) => unknown> = [
@@ -117,6 +118,25 @@ describe("interactiveMapOptions", () => {
         mapFixture({ markers: [{ id: "n", coordinates: [0, 0], showLabel: false }] })
       ).markers[0]?.options
     ).toEqual({})
+  })
+
+  it("passes a custom open-map label when the map starts as a button", () => {
+    expect(interactiveMapOptions(openMapButtonMap)).toMatchObject({
+      behaviour: "buttonFirst",
+      buttonText: "Open map of London",
+      hasExitButton: true,
+      mapLabel: basicMap.mapLabel,
+      center: basicMap.center,
+      zoom: basicMap.zoom
+    })
+  })
+
+  it("leaves button options off an inline map", () => {
+    const options = interactiveMapOptions(basicMap)
+
+    expect(options.behaviour).toBe("inline")
+    expect(options).not.toHaveProperty("buttonText")
+    expect(options).not.toHaveProperty("hasExitButton")
   })
 
   it("includes colour and label without showLabel", () => {

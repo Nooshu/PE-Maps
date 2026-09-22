@@ -42,6 +42,7 @@ import {
 import { countrysideSchemesMap } from "./maps/countryside-schemes-map.js"
 import { floodRiskMap } from "./maps/flood-risk-map.js"
 import { localAuthorityMap } from "./maps/local-authority-map.js"
+import { openMapButtonMap } from "./maps/open-map-button.js"
 import { planningMap } from "./maps/planning-map.js"
 import { planningApplicationsMap } from "./maps/planning-applications-map.js"
 import { rightsAndInterestsMap } from "./maps/rights-and-interests-map.js"
@@ -179,6 +180,7 @@ export async function build(): Promise<void> {
   await esbuild.build({
     entryPoints: [
       path.join(projectRoot, "src/client/map.ts"),
+      path.join(projectRoot, "src/client/open-map-button.ts"),
       path.join(projectRoot, "src/client/route-map.ts"),
       path.join(projectRoot, "src/client/flood-risk-map.ts"),
       path.join(projectRoot, "src/client/planning-map.ts"),
@@ -248,6 +250,11 @@ export async function build(): Promise<void> {
   const pages: Array<{ template: string; output: string; context?: Record<string, unknown> }> = [
     { template: "index.njk", output: "index.html" },
     { template: "basic-map.njk", output: "basic-map.html", context: { map: basicMap } },
+    {
+      template: "open-map-button.njk",
+      output: "open-map-button.html",
+      context: { map: openMapButtonMap }
+    },
     {
       template: "route-map.njk",
       output: "route-map.html",

@@ -335,7 +335,9 @@ export type TransportStatistics = {
 export type MapDefinition = {
   containerId: string
   mapLabel: string
-  behaviour: "inline"
+  behaviour: "inline" | "buttonFirst"
+  buttonText?: string
+  hasExitButton?: boolean
   zoom: number
   center: LonLat
   bounds?: [west: number, south: number, east: number, north: number]
@@ -390,6 +392,8 @@ export function interactiveMapOptions(map: MapDefinition) {
   return {
     behaviour: map.behaviour,
     mapLabel: map.mapLabel,
+    ...(map.buttonText ? { buttonText: map.buttonText } : {}),
+    ...(map.hasExitButton ? { hasExitButton: true } : {}),
     zoom: map.zoom,
     center: map.center,
     bounds: map.bounds,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { createBasicMap } from "../src/client/map.js"
+import { createOpenMapButton } from "../src/client/open-map-button.js"
 import { createCountrysideSchemesMap } from "../src/client/countryside-schemes-map.js"
 import { createFloodRiskMap } from "../src/client/flood-risk-map.js"
 import { createLocalAuthorityMap } from "../src/client/local-authority-map.js"
@@ -27,6 +28,19 @@ import { MockInteractiveMap } from "./mocks/interactive-map.js"
 import { mapFixture } from "./helpers/map-fixture.js"
 
 describe("client maps", () => {
+  it("starts the London map behind an open-map button", () => {
+    const instance = MockInteractiveMap.instances.find(
+      (created) => created.options.behaviour === "buttonFirst"
+    )
+
+    expect(instance?.options).toMatchObject({
+      buttonText: "Open map of London",
+      hasExitButton: true,
+      mapLabel: "Map of London, United Kingdom",
+      center: [-0.1276, 51.5074]
+    })
+  })
+
   it("initialises every example with the real map data and fits bounds when ready", () => {
     const created = MockInteractiveMap.instances.filter((instance) =>
       [
@@ -60,6 +74,7 @@ describe("client maps", () => {
     const empty = mapFixture({ bounds: undefined, polygons: [], lines: [], markers: [] })
 
     createBasicMap(empty)
+    createOpenMapButton(empty)
     createRouteMap(empty)
     createFloodRiskMap(empty)
     createPlanningMap(empty)
